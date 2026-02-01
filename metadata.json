@@ -1,0 +1,5 @@
+{
+  "name": "GoldPulse Dashboard",
+  "description": "A high-fidelity dark-mode financial dashboard tracking Gold prices and market activity, featuring Gemini-powered market insights.",
+  "requestFramePermissions": []
+}
