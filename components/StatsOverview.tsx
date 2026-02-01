@@ -14,6 +14,13 @@ const icons = [
   <BarChart2 className="w-5 h-5 text-orange-400" />
 ];
 
+const tooltips = [
+  "Current global spot price for 1 Troy Ounce of Gold in US Dollars.",
+  "Total estimated value of all above-ground gold reserves globally.",
+  "Total number of outstanding derivative contracts not yet settled.",
+  "Standard deviation of daily returns over the last 30 days."
+];
+
 const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics }) => {
   return (
     <div className="bg-[#18181b] p-8 rounded-3xl border border-white/5 flex flex-col">
@@ -34,7 +41,21 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics }) => {
                    <div className="w-10 h-10 bg-[#27272a] rounded-full flex items-center justify-center text-zinc-100 border border-white/5">
                       {icons[index]}
                    </div>
-                   <HelpCircle className="w-4 h-4 text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" />
+                   
+                   {/* Tooltip Wrapper */}
+                   <div className="relative group">
+                       <HelpCircle className="w-4 h-4 text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" />
+                       
+                       {/* Floating Tooltip Popup */}
+                       <div className="absolute right-0 top-full mt-2 w-48 p-3 bg-[#09090b] border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none translate-y-2 group-hover:translate-y-0">
+                           {/* Arrow Pointer */}
+                           <div className="absolute -top-1.5 right-0.5 w-3 h-3 bg-[#09090b] border-t border-l border-zinc-800 transform rotate-45"></div>
+                           {/* Content */}
+                           <p className="text-xs text-zinc-400 font-medium leading-snug relative z-10">
+                               {tooltips[index]}
+                           </p>
+                       </div>
+                   </div>
                 </div>
 
                 <div className="flex-1 flex flex-col">
