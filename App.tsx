@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Bell, Sparkles } from 'lucide-react';
 import StatsOverview from './components/StatsOverview';
 import PriceChart from './components/PriceChart';
 import VolumeChart from './components/VolumeChart';
@@ -59,9 +58,6 @@ const App: React.FC = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-lime-400 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(163,230,53,0.3)]">
-                <LayoutGrid className="text-black w-6 h-6" />
-             </div>
              <div>
                 <h1 className="text-xl font-medium tracking-tight">Gold Market Overview</h1>
                 <p className="text-zinc-500 text-xs">Global Spot & Futures</p>
@@ -85,22 +81,22 @@ const App: React.FC = () => {
         <StatsOverview metrics={statsData} />
 
         {/* Middle Row: Price Chart & Volume */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
-            <div className="lg:col-span-2 h-full">
-                <PriceChart />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[400px]">
+            <div className="lg:col-span-2 h-[300px] lg:h-full">
+                <PriceChart range={selectedRange} />
             </div>
-            <div className="h-full">
-                <VolumeChart />
+            <div className="h-[300px] lg:h-full">
+                <VolumeChart range={selectedRange} />
             </div>
         </div>
 
         {/* Bottom Row: Transactions & News */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
-            <div className="lg:col-span-2 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
+            <div className="lg:col-span-2 h-full min-h-[400px]">
                 <TransactionTable />
             </div>
-            <div className="h-full">
-                <NewsList />
+            <div className="h-full min-h-[400px]">
+                <NewsList insight={insight} loading={loadingInsight} />
             </div>
         </div>
 

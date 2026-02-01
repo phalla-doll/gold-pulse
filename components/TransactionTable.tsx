@@ -14,7 +14,7 @@ const holdings: CountryGoldHolding[] = [
 
 const HoldingsTable: React.FC = () => {
   return (
-    <div className="bg-[#18181b] p-6 rounded-3xl border border-[#27272a] h-full flex flex-col">
+    <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-2">
             <h3 className="text-white font-medium text-lg">Top Gold Reserves</h3>
@@ -23,66 +23,66 @@ const HoldingsTable: React.FC = () => {
         
         <div className="flex gap-3">
             <div className="relative group">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-4 h-4 group-focus-within:text-lime-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-3.5 h-3.5 group-focus-within:text-lime-400" />
                 <input 
                     type="text" 
                     placeholder="Search country..." 
-                    className="bg-[#09090b] text-zinc-300 text-sm pl-10 pr-4 py-2 rounded-xl border border-zinc-800 focus:border-lime-400 focus:outline-none w-48 transition-colors"
+                    className="bg-[#09090b] text-zinc-300 text-xs pl-9 pr-4 py-2 rounded-xl border border-zinc-800 focus:border-lime-400 focus:outline-none w-40 transition-colors placeholder:text-zinc-600"
                 />
             </div>
-            <button className="flex items-center space-x-2 bg-[#09090b] text-zinc-500 px-4 py-2 rounded-xl border border-zinc-800 hover:text-zinc-300 hover:border-zinc-700 transition-colors">
-                <span className="text-sm">Filter</span>
-                <Filter className="w-4 h-4" />
+            <button className="flex items-center space-x-2 bg-[#09090b] text-zinc-500 px-3 py-2 rounded-xl border border-zinc-800 hover:text-zinc-300 hover:border-zinc-700 transition-colors">
+                <span className="text-xs font-medium">Filter</span>
+                <Filter className="w-3.5 h-3.5" />
             </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto flex-1">
+      <div className="overflow-x-auto flex-1 custom-scrollbar">
         <table className="w-full text-left border-collapse">
             <thead>
-                <tr className="text-zinc-500 text-xs border-b border-zinc-800">
-                    <th className="pb-3 pl-2 font-medium">Rank</th>
+                <tr className="text-zinc-500 text-xs border-b border-zinc-800/50">
+                    <th className="pb-3 text-center w-12 font-medium">Rank</th>
                     <th className="pb-3 font-medium">Country</th>
-                    <th className="pb-3 font-medium text-right">Holdings (Tonnes)</th>
-                    <th className="pb-3 font-medium text-right">Value (USD)</th>
+                    <th className="pb-3 font-medium text-right">Holdings</th>
+                    <th className="pb-3 font-medium text-right">Value</th>
                     <th className="pb-3 font-medium text-right">% of Reserves</th>
-                    <th className="pb-3 font-medium text-right pr-4">Recent Change</th>
+                    <th className="pb-3 font-medium text-right pr-4">Change</th>
                 </tr>
             </thead>
             <tbody className="text-sm">
                 {holdings.map((item) => (
-                    <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/50 last:border-0">
-                        <td className="py-4 pl-4 text-zinc-500 font-mono">#{item.rank}</td>
-                        <td className="py-4">
+                    <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/30 last:border-0">
+                        <td className="py-3 text-center text-zinc-500 font-mono text-xs tabular-nums">#{item.rank}</td>
+                        <td className="py-3">
                             <div className="flex items-center space-x-3">
                                 <img 
                                     src={`https://flagcdn.com/w40/${item.flagCode}.png`} 
                                     alt={item.country} 
-                                    className="w-6 h-4 object-cover rounded shadow-sm opacity-80 group-hover:opacity-100 transition-opacity" 
+                                    className="w-5 h-3.5 object-cover rounded shadow-sm opacity-80 group-hover:opacity-100 transition-opacity" 
                                 />
-                                <span className="text-zinc-200 font-medium">{item.country}</span>
+                                <span className="text-zinc-200 font-medium text-sm">{item.country}</span>
                             </div>
                         </td>
-                        <td className="py-4 text-right text-zinc-200 font-medium">
-                            {item.holdings.toLocaleString()} <span className="text-zinc-500 text-xs">T</span>
+                        <td className="py-3 text-right text-zinc-200 font-medium tabular-nums">
+                            {item.holdings.toLocaleString()} <span className="text-zinc-600 text-[10px]">T</span>
                         </td>
-                        <td className="py-4 text-right text-zinc-400 font-mono">{item.value}</td>
-                        <td className="py-4 text-right">
+                        <td className="py-3 text-right text-zinc-400 font-mono text-xs tabular-nums">{item.value}</td>
+                        <td className="py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
-                                <span className="text-zinc-300">{item.percentage}%</span>
+                                <span className="text-zinc-300 text-xs tabular-nums">{item.percentage}%</span>
                                 <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
                                     <div 
-                                        className="h-full bg-lime-400/50" 
+                                        className="h-full bg-lime-400/50 group-hover:bg-lime-400 transition-colors" 
                                         style={{ width: `${item.percentage}%` }}
                                     ></div>
                                 </div>
                             </div>
                         </td>
-                        <td className="py-4 text-right pr-4">
+                        <td className="py-3 text-right pr-4">
                              {item.change === 0 ? (
-                                 <span className="text-zinc-600">-</span>
+                                 <span className="text-zinc-700">-</span>
                              ) : (
-                                 <span className={`text-xs px-2 py-1 rounded ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
+                                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded tabular-nums ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
                                      {item.change > 0 ? '+' : ''}{item.change} T
                                  </span>
                              )}
