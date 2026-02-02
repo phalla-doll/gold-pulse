@@ -146,13 +146,30 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                 ) : (
                     <>
                     {loadingNews ? (
-                        // Skeleton for News Items
+                        // Enhanced Skeleton for News Items matching the real layout
                         [...Array(4)].map((_, i) => (
                              <div key={`news-skel-${i}`} className="p-4 rounded-2xl border border-zinc-800 bg-[#09090b]">
-                                <Skeleton className="h-4 w-3/4 rounded mb-3" />
-                                <div className="flex items-center gap-3">
-                                    <Skeleton className="h-3 w-16 rounded" />
-                                    <Skeleton className="h-3 w-12 rounded" />
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                        {/* Title Skeleton - 2 lines for realism */}
+                                        <Skeleton className="h-3.5 w-[90%] rounded-sm mb-2" />
+                                        <Skeleton className="h-3.5 w-[60%] rounded-sm mb-3" />
+                                        
+                                        <div className="flex items-center gap-3 mt-1">
+                                            {/* Source Group */}
+                                            <div className="flex items-center gap-1.5">
+                                                <Skeleton className="w-3 h-3 rounded-full" />
+                                                <Skeleton className="h-2.5 w-14 rounded-sm" />
+                                            </div>
+                                            {/* Time Group */}
+                                            <div className="flex items-center gap-1.5">
+                                                <Skeleton className="w-3 h-3 rounded-full" />
+                                                <Skeleton className="h-2.5 w-10 rounded-sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Icon Placeholder */}
+                                    <Skeleton className="w-4 h-4 rounded-sm opacity-50 shrink-0" />
                                 </div>
                              </div>
                         ))
