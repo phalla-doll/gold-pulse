@@ -138,6 +138,8 @@ export const getMarketInsight = async (
         });
         return response.text || "No insight generated.";
     } else if (activeProvider === 'openrouter' && openRouterKey) {
+        // Some free models on OpenRouter (like DeepSeek or Z.AI) are reasoning models.
+        // They need more tokens to "think" before outputting content, otherwise they truncate.
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -148,13 +150,36 @@ export const getMarketInsight = async (
             body: JSON.stringify({
                 model: openRouterModel,
                 messages: [{ role: "user", content: prompt }],
-                max_tokens: 100
+                // Increased limit to accommodate chain-of-thought/reasoning tokens
+                max_tokens: 512 
             })
         });
         
         const data = await response.json();
         if (data.error) throw new Error(data.error.message || 'OpenRouter Error');
-        return data.choices?.[0]?.message?.content || "No insight generated.";
+
+        const choice = data.choices?.[0];
+        const msg = choice?.message;
+
+        if (!msg) return "No insight generated.";
+
+        // Priority 1: Standard content
+        if (msg.content && msg.content.trim()) {
+            return msg.content;
+        }
+
+        // Priority 2: Explicit reasoning field (e.g. DeepSeek R1, Z.AI)
+        if (msg.reasoning && msg.reasoning.trim()) {
+            return msg.reasoning;
+        }
+
+        // Priority 3: Nested reasoning details (e.g. some experimental models)
+        if (Array.isArray(msg.reasoning_details)) {
+             const textDetail = msg.reasoning_details.find((d: any) => d.text && d.type === 'reasoning.text');
+             if (textDetail && textDetail.text) return textDetail.text;
+        }
+        
+        return "No insight generated.";
     }
   } catch (error: any) {
     console.error("AI Insight Error:", error);
