@@ -33,6 +33,9 @@ const App: React.FC = () => {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
 
+  // Last Updated Timestamp
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
   // State for dynamic data
   const [statsData, setStatsData] = useState<StatMetric[]>(initialStats);
   const [chartData, setChartData] = useState<PriceDataPoint[]>([]);
@@ -124,6 +127,7 @@ const App: React.FC = () => {
     const result = await getMarketInsight(price, change, summary, history, recentEvents);
     setInsight(result);
     setLoadingInsight(false);
+    setLastUpdated(new Date());
   };
 
   const fetchNews = async () => {
@@ -132,6 +136,7 @@ const App: React.FC = () => {
       const liveNews = await getLiveGoldNews();
       setNews(liveNews);
       setLoadingNews(false);
+      setLastUpdated(new Date());
   };
 
   // Fetch Data when Range Changes
@@ -161,6 +166,13 @@ const App: React.FC = () => {
             fetchInsight(currentPriceStr, currentChange, currentHistory);
             fetchNews();
         }, 100);
+      }
+  };
+
+  const handleRefresh = () => {
+      if (currentHistory.length > 0) {
+        fetchInsight(currentPriceStr, currentChange, currentHistory);
+        fetchNews();
       }
   };
 
@@ -259,7 +271,8 @@ const App: React.FC = () => {
                     news={news} 
                     apiKeyConfigured={apiKeyConfigured}
                     onConnect={() => setIsApiKeyModalOpen(true)}
-                    onRefresh={() => fetchInsight(currentPriceStr, currentChange, currentHistory)}
+                    onRefresh={handleRefresh}
+                    lastUpdated={lastUpdated}
                 />
             </div>
         </div>

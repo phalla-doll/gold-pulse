@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, ExternalLink, Globe, Clock, AlertTriangle, ZapOff, Lock, RotateCw } from 'lucide-react';
 import { NewsItem } from '../types';
 import { trackEvent } from '../services/analytics';
@@ -11,6 +11,7 @@ interface MarketIntelligenceProps {
   apiKeyConfigured: boolean;
   onConnect: () => void;
   onRefresh?: () => void;
+  lastUpdated?: Date | null;
 }
 
 // Helper for consistent shimmer skeletons
@@ -34,8 +35,38 @@ const formatInsight = (text: string) => {
   });
 };
 
-const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect, onRefresh }) => {
+const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect, onRefresh, lastUpdated }) => {
   const isQuotaError = insight.includes('Quota') || insight.includes('Limit Exceeded');
+  const [timeAgo, setTimeAgo] = useState<string>('');
+
+  useEffect(() => {
+    if (!lastUpdated) {
+        setTimeAgo('');
+        return;
+    }
+
+    const calculateTimeAgo = () => {
+        const now = new Date();
+        const diffInSeconds = Math.max(0, Math.floor((now.getTime() - lastUpdated.getTime()) / 1000));
+        
+        if (diffInSeconds < 30) {
+            setTimeAgo('Updated just now');
+        } else if (diffInSeconds < 60) {
+            setTimeAgo('Updated < 1m ago');
+        } else if (diffInSeconds < 3600) {
+            const mins = Math.floor(diffInSeconds / 60);
+            setTimeAgo(`Updated ${mins}m ago`);
+        } else {
+            const hours = Math.floor(diffInSeconds / 3600);
+             setTimeAgo(`Updated ${hours}h ago`);
+        }
+    };
+
+    calculateTimeAgo();
+    // Update every 30 seconds to keep the "ago" relative time fresh
+    const timer = setInterval(calculateTimeAgo, 30000); 
+    return () => clearInterval(timer);
+  }, [lastUpdated]);
 
   return (
     <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden flex flex-col">
@@ -137,7 +168,9 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
                             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${loading || loadingNews || isQuotaError ? 'bg-zinc-500' : 'bg-lime-400'}`}></span>
                             <span className={`relative inline-flex rounded-full h-2 w-2 ${loading || loadingNews || isQuotaError ? 'bg-zinc-500' : 'bg-lime-500'}`}></span>
                         </span>
-                        <span className="text-xs text-zinc-500 font-medium hidden md:inline">Updated via Google Search</span>
+                        <span className="text-xs text-zinc-500 font-medium hidden md:inline">
+                            {loading || loadingNews ? 'Updating...' : (timeAgo || 'Ready to fetch')}
+                        </span>
                         </>
                     )}
                 </div>
