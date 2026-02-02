@@ -77,10 +77,6 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
         <div>
            <div className="flex items-center gap-2 mb-1">
              <h3 className="text-white font-medium text-lg">Gold Price Action</h3>
-             <span className="flex items-center text-[10px] font-medium uppercase tracking-wider text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20">
-                <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse mr-1.5"></div>
-                {range === '1D' ? 'Live' : range}
-             </span>
            </div>
            <div className="flex items-baseline gap-3">
              <span className="text-3xl font-medium text-white tracking-tight tabular-nums">
