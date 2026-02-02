@@ -225,7 +225,13 @@ const App: React.FC = () => {
                 <TransactionTable currentGoldPrice={currentGoldPrice} />
             </div>
             <div className="h-full min-h-[400px]">
-                <NewsList insight={insight} loading={loadingInsight} news={news} />
+                <NewsList 
+                    insight={insight} 
+                    loading={loadingInsight} 
+                    news={news} 
+                    apiKeyConfigured={apiKeyConfigured}
+                    onConnect={() => setIsApiKeyModalOpen(true)}
+                />
             </div>
         </div>
 
