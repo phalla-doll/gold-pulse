@@ -66,7 +66,7 @@ const HoldingsTable: React.FC = () => {
             <tbody className="text-sm">
                 {holdings.map((item) => (
                     <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/30 last:border-0">
-                        <td className="py-3 text-center text-zinc-500 font-mono text-xs tabular-nums">#{item.rank}</td>
+                        <td className="py-3 text-center text-zinc-500 text-sm tabular-nums">#{item.rank}</td>
                         <td className="py-3">
                             <div className="flex items-center space-x-3">
                                 <img 
@@ -77,13 +77,13 @@ const HoldingsTable: React.FC = () => {
                                 <span className="text-zinc-200 font-medium text-sm">{item.country}</span>
                             </div>
                         </td>
-                        <td className="py-3 text-right text-zinc-200 font-medium tabular-nums">
-                            {item.holdings.toLocaleString()} <span className="text-zinc-600 text-[10px]">T</span>
+                        <td className="py-3 text-right text-zinc-200 font-medium tabular-nums text-sm">
+                            {item.holdings.toLocaleString()} <span className="text-zinc-600 text-xs font-normal">T</span>
                         </td>
-                        <td className="py-3 text-right text-zinc-400 font-mono text-xs tabular-nums">{item.value}</td>
+                        <td className="py-3 text-right text-zinc-400 text-sm tabular-nums">{item.value}</td>
                         <td className="py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
-                                <span className="text-zinc-300 text-xs tabular-nums">{item.percentage}%</span>
+                                <span className="text-zinc-300 text-sm tabular-nums">{item.percentage}%</span>
                                 <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-lime-400/50 group-hover:bg-lime-400 transition-colors" 
@@ -96,7 +96,7 @@ const HoldingsTable: React.FC = () => {
                              {item.change === 0 ? (
                                  <span className="text-zinc-700">-</span>
                              ) : (
-                                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded tabular-nums ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
+                                 <span className={`text-xs font-medium px-2 py-0.5 rounded tabular-nums ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
                                      {item.change > 0 ? '+' : ''}{item.change} T
                                  </span>
                              )}
