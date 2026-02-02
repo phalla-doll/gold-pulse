@@ -85,7 +85,7 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
                                     trackEvent('refresh_ai_insight');
                                 }}
                                 disabled={loading}
-                                className={`ml-auto p-1 rounded-md hover:bg-white/10 text-zinc-500 hover:text-zinc-300 transition-all ${loading ? 'animate-spin cursor-not-allowed opacity-70' : ''}`}
+                                className={`ml-auto p-1 rounded-md hover:bg-white/10 text-zinc-500 hover:text-zinc-300 transition-all ${loading ? 'animate-spin cursor-not-allowed opacity-70 hover:bg-transparent' : ''}`}
                                 aria-label="Refresh Insight"
                                 title="Regenerate Analysis"
                              >
