@@ -1,6 +1,8 @@
-# Gold Monitoring Dashboard
+# GoldPulse Dashboard
 
 A high-fidelity, dark-mode financial dashboard designed for tracking real-time Gold (XAU/USD) prices, market activity, and global reserves. The application integrates Google's Gemini API to provide AI-powered market sentiment analysis and live news updates.
+
+![GoldPulse Dashboard](https://via.placeholder.com/1200x675/09090b/a3e635?text=GoldPulse+Dashboard)
 
 ## Features
 

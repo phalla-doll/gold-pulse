@@ -129,6 +129,7 @@ export const getMarketInsight = async (
       - Do NOT use titles or headers.
       - Keep it under 50 words.
       - Round all percentages and numeric values to a maximum of 2 decimal places.
+      - Keep the dollar sign with the number if provided.
   `;
 
   try {
