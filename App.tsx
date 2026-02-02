@@ -18,6 +18,7 @@ const statsData: StatMetric[] = [
 const App: React.FC = () => {
   const [insight, setInsight] = useState<string>('');
   const [loadingInsight, setLoadingInsight] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(true);
   const [selectedRange, setSelectedRange] = useState('1M');
 
   // Function to simulate getting AI insight
@@ -48,6 +49,13 @@ const App: React.FC = () => {
   useEffect(() => {
     // Initial fetch
     fetchInsight();
+
+    // Simulate stats loading delay
+    const timer = setTimeout(() => {
+        setLoadingStats(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -78,7 +86,7 @@ const App: React.FC = () => {
         </header>
 
         {/* Top Stats Overview Card */}
-        <StatsOverview metrics={statsData} />
+        <StatsOverview metrics={statsData} loading={loadingStats} />
 
         {/* Middle Row: Price Chart & Volume */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[400px]">

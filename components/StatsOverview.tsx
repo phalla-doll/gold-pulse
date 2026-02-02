@@ -5,6 +5,7 @@ import { StatMetric } from '../types';
 
 interface StatsOverviewProps {
   metrics: StatMetric[];
+  loading?: boolean;
 }
 
 const icons = [
@@ -21,12 +22,45 @@ const tooltips = [
   "Standard deviation of daily returns over the last 30 days."
 ];
 
-const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics }) => {
+const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false }) => {
+  const displayItems = loading ? new Array(4).fill(null) : metrics;
+
   return (
     <div className="bg-[#18181b] p-8 rounded-3xl border border-white/5 flex flex-col">
       {/* Grid of Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50">
-        {metrics.map((metric, index) => {
+        {displayItems.map((metric, index) => {
+           if (loading || !metric) {
+               return (
+                <div key={`skeleton-${index}`} className="relative flex flex-col justify-between pt-8 lg:pt-0 pb-8 lg:pb-0 px-0 lg:px-8 first:pl-0 last:pr-0 first:pt-0 last:pb-0 lg:first:pt-0 lg:last:pb-0">
+                    {/* Icon Skeleton */}
+                    <div className="mb-6 flex justify-between items-start">
+                        <div className="w-10 h-10 bg-zinc-800/50 rounded-full animate-pulse border border-white/5" />
+                    </div>
+
+                    <div className="flex-1 flex flex-col">
+                        {/* Label Skeleton */}
+                        <div className="h-3 w-20 bg-zinc-800/50 rounded animate-pulse mb-3" />
+                        
+                        <div className="flex justify-between items-end mt-auto">
+                            <div>
+                                {/* Value Skeleton */}
+                                <div className="h-8 w-32 bg-zinc-800/50 rounded animate-pulse mb-3" />
+                                {/* Change Badge Skeleton */}
+                                <div className="h-6 w-24 bg-zinc-800/50 rounded animate-pulse" />
+                            </div>
+
+                            {/* Sparkline Skeleton with Gradient Animation */}
+                            <div className="w-24 h-12 rounded-lg bg-zinc-800/30 overflow-hidden relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-700/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+                                <div className="w-full h-full bg-zinc-800/20 animate-pulse" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               );
+           }
+
            const isPositive = metric.change >= 0;
            
            // Transform for AreaChart
