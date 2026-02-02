@@ -179,7 +179,7 @@ const App: React.FC = () => {
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-2">
           {/* Title Section */}
           <div>
-             <h1 className="text-3xl font-medium tracking-tight text-white mb-2">GoldPulse Dashboard</h1>
+             <h1 className="text-3xl font-medium tracking-tight text-white mb-2">Gold Monitoring Dashboard</h1>
              <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
