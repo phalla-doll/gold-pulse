@@ -19,18 +19,32 @@ const Skeleton = ({ className }: { className?: string }) => (
   </div>
 );
 
+// Helper to parse bold markdown from AI response
+const formatInsight = (text: string) => {
+  if (!text) return "Analyzing market data...";
+  
+  // Split by bold markers (**text**)
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="text-lime-100 font-bold">{part.slice(2, -2)}</strong>;
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect }) => {
   const isQuotaError = insight.includes('Quota') || insight.includes('Limit Exceeded');
 
   return (
-    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden flex flex-col">
         {/* Background Gradient Effect - Bottom Right */}
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-20 -mb-20 pointer-events-none"></div>
 
-        <div className="flex flex-col h-full relative z-10">
+        <div className="flex flex-col h-full relative z-10 min-h-0">
             {/* Analyst Note or Placeholder */}
             {!apiKeyConfigured ? (
-                 <div className="mb-6 border border-zinc-800 rounded-xl p-4 bg-zinc-900/30 flex items-center justify-between">
+                 <div className="mb-6 border border-zinc-800 rounded-xl p-4 bg-zinc-900/30 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-zinc-800 rounded-lg">
                             <Sparkles className="w-4 h-4 text-zinc-600" />
@@ -42,7 +56,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                     </div>
                  </div>
             ) : (
-                <div className={`mb-6 border rounded-xl p-4 transition-all relative overflow-hidden ${
+                <div className={`mb-6 border rounded-xl p-4 transition-all relative overflow-hidden shrink-0 ${
                     isQuotaError 
                     ? 'bg-rose-950/20 border-rose-500/30' 
                     : 'bg-gradient-to-r from-lime-900/10 to-transparent border-lime-400/20'
@@ -86,7 +100,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                                 </div>
                             ) : (
                                 <p className="text-xs leading-relaxed font-medium text-zinc-300">
-                                    {insight || "Analyzing market data..."}
+                                    {formatInsight(insight)}
                                 </p>
                             )}
                         </div>
@@ -94,7 +108,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                 </div>
             )}
 
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 shrink-0">
                 <h3 className="text-white font-medium text-lg">Live Market Feed</h3>
                 <div className="flex items-center gap-2">
                     {apiKeyConfigured && (
@@ -109,7 +123,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar -mr-2">
+            <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar -mr-2 min-h-0">
                 {!apiKeyConfigured ? (
                      <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30 h-full min-h-[200px]">
                         <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-3">
@@ -156,20 +170,20 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     onClick={() => trackEvent('click_news_link', { title: item.title, source: item.source })}
-                                    className={`group block p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                                    className={`group block p-4 rounded-2xl border transition-all cursor-pointer relative ${
                                         isAlert 
                                         ? 'bg-rose-950/10 border-rose-500/20 hover:border-rose-500/40' 
-                                        : 'bg-[#09090b] border-zinc-800 hover:border-lime-400/30 hover:bg-zinc-900/80'
+                                        : 'bg-[#09090b] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/80'
                                     }`}
                                 >
-                                <div className="flex justify-between items-start gap-3">
-                                        <div className="flex-1">
-                                            <span className={`text-sm font-medium leading-snug transition-colors block mb-1.5 ${
+                                <div className="flex justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <span className={`text-sm font-medium leading-snug transition-colors block mb-2 break-words ${
                                                 isAlert ? 'text-rose-300 group-hover:text-rose-200' : 'text-zinc-200 group-hover:text-lime-400'
                                             }`}>
                                                 {item.title}
                                             </span>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 flex-wrap">
                                                 <div className={`flex items-center gap-1.5 ${isAlert ? 'text-rose-500/70' : 'text-zinc-500'}`}>
                                                     {isAlert ? <AlertTriangle className="w-3 h-3"/> : <Globe className="w-3 h-3" />}
                                                     <span className="text-[10px] font-medium uppercase tracking-wider">{item.source}</span>
@@ -181,7 +195,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = fal
                                             </div>
                                         </div>
                                         {item.url && !isAlert && (
-                                            <ExternalLink className="w-4 h-4 text-zinc-700 group-hover:text-lime-400 transition-colors shrink-0" />
+                                            <ExternalLink className="w-4 h-4 text-zinc-600 group-hover:text-lime-400 transition-colors shrink-0 mt-0.5" />
                                         )}
                                 </div>
                                 </a>
