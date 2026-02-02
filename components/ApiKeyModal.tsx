@@ -57,7 +57,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
             <Key className={`w-6 h-6 ${provider === 'gemini' ? 'text-lime-400' : 'text-blue-400'}`} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-white">Configure AI Provider</h2>
+            <h2 className="text-xl font-medium text-white mb-1">Configure AI Provider</h2>
             <p className="text-zinc-500 text-xs">Enable live market insights</p>
           </div>
         </div>
@@ -146,7 +146,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
             <button 
                 type="submit" 
                 disabled={!key.trim()}
-                className={`w-full font-semibold py-3 rounded-xl transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`w-full font-medium py-3 rounded-xl transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                     provider === 'gemini' 
                     ? 'bg-lime-400 hover:bg-lime-500 text-black shadow-lime-400/20' 
                     : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
