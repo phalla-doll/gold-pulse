@@ -25,8 +25,11 @@ const Skeleton = ({ className }: { className?: string }) => (
 const formatInsight = (text: string) => {
   if (!text) return "Analyzing market data...";
   
+  // Clean long decimals: look for numbers with 3+ decimal places and round them
+  const cleaned = text.replace(/(\d+\.\d{3,})/g, (match) => parseFloat(match).toFixed(2));
+  
   // Split by bold markers (**text**)
-  const parts = text.split(/(\*\*.*?\*\*)/g);
+  const parts = cleaned.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={index} className="text-lime-100 font-bold">{part.slice(2, -2)}</strong>;

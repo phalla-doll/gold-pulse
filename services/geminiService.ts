@@ -128,6 +128,7 @@ export const getMarketInsight = async (
       - Do NOT use introductory phrases like "Here is an analysis", "Executive Summary:", "Based on the data", or "The gold market data shows".
       - Do NOT use titles or headers.
       - Keep it under 50 words.
+      - Round all percentages and numeric values to a maximum of 2 decimal places.
   `;
 
   try {
