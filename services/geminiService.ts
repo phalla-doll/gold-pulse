@@ -1,21 +1,41 @@
 import { GoogleGenAI } from "@google/genai";
 import { NewsItem } from "../types";
 
-let ai: GoogleGenAI | null = null;
-const STORAGE_KEY = 'gemini_api_key';
+type AIProvider = 'gemini' | 'openrouter';
 
-// Initialize Gemini Client with fallback to Local Storage
+let ai: GoogleGenAI | null = null;
+let openRouterKey: string = '';
+let openRouterModel: string = 'google/gemini-2.0-flash-lite-preview-02-05:free'; // Default free model
+let activeProvider: AIProvider = 'gemini';
+
+const STORAGE_KEY_GEMINI = 'gemini_api_key';
+const STORAGE_KEY_OPENROUTER = 'openrouter_api_key';
+const STORAGE_KEY_PROVIDER = 'ai_provider';
+const STORAGE_KEY_MODEL = 'openrouter_model';
+
+// Initialize AI Clients based on stored config
 const initializeAI = (): boolean => {
-    // Priority: 1. Env Variable (if built-in), 2. Local Storage
-    const apiKey = process.env.API_KEY || localStorage.getItem(STORAGE_KEY) || '';
-    
-    if (apiKey) {
-        try {
-            ai = new GoogleGenAI({ apiKey });
+    const storedProvider = localStorage.getItem(STORAGE_KEY_PROVIDER) as AIProvider | null;
+    activeProvider = storedProvider === 'openrouter' ? 'openrouter' : 'gemini';
+
+    if (activeProvider === 'gemini') {
+        const apiKey = process.env.API_KEY || localStorage.getItem(STORAGE_KEY_GEMINI) || '';
+        if (apiKey) {
+            try {
+                ai = new GoogleGenAI({ apiKey });
+                return true;
+            } catch (e) {
+                console.error("Failed to initialize Gemini client", e);
+                return false;
+            }
+        }
+    } else {
+        const apiKey = localStorage.getItem(STORAGE_KEY_OPENROUTER) || '';
+        const model = localStorage.getItem(STORAGE_KEY_MODEL);
+        if (apiKey) {
+            openRouterKey = apiKey;
+            if (model) openRouterModel = model;
             return true;
-        } catch (e) {
-            console.error("Failed to initialize Gemini client", e);
-            return false;
         }
     }
     return false;
@@ -24,19 +44,31 @@ const initializeAI = (): boolean => {
 // Attempt initialization on module load
 initializeAI();
 
-export const isGeminiConfigured = (): boolean => {
-    return !!ai;
+export const isAIConfigured = (): boolean => {
+    if (activeProvider === 'gemini') return !!ai;
+    return !!openRouterKey;
 };
 
-export const saveApiKey = (key: string) => {
-    localStorage.setItem(STORAGE_KEY, key);
+export const saveConfig = (key: string, provider: 'gemini' | 'openrouter', model?: string) => {
+    localStorage.setItem(STORAGE_KEY_PROVIDER, provider);
+    
+    if (provider === 'gemini') {
+        localStorage.setItem(STORAGE_KEY_GEMINI, key);
+    } else {
+        localStorage.setItem(STORAGE_KEY_OPENROUTER, key);
+        if (model) localStorage.setItem(STORAGE_KEY_MODEL, model);
+    }
+    
     initializeAI();
 };
 
 export const removeApiKey = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY_GEMINI);
+    localStorage.removeItem(STORAGE_KEY_OPENROUTER);
+    localStorage.removeItem(STORAGE_KEY_PROVIDER);
+    localStorage.removeItem(STORAGE_KEY_MODEL);
     ai = null;
-    // Re-check env var just in case
+    openRouterKey = '';
     initializeAI();
 };
 
@@ -75,12 +107,11 @@ export const getMarketInsight = async (
   priceHistory: number[] = [],
   recentEvents: string[] = []
 ): Promise<string> => {
-  if (!ai) {
-    return "AI Insights require a Gemini API Key. Click the key icon in the header to configure.";
+  if (!isAIConfigured()) {
+    return "AI Insights require configuration. Click the key icon in the header.";
   }
 
-  try {
-    const prompt = `
+  const prompt = `
       You are a senior financial analyst.
       Analyze the following Gold Market data:
       
@@ -91,85 +122,138 @@ export const getMarketInsight = async (
       
       TASK:
       Provide a 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver.
-    `;
+  `;
 
-    const response = await retryWithBackoff(async () => {
-         // Force non-null assertion because we check !ai at start, 
-         // but retry wrapper context implies it might be lost if we were stricter. 
-         // For this logic, ai is stable.
-         return await ai!.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: prompt,
-            config: {
-                thinkingConfig: { thinkingBudget: 0 },
-                maxOutputTokens: 80,
-            }
+  try {
+    if (activeProvider === 'gemini' && ai) {
+        const response = await retryWithBackoff(async () => {
+             return await ai!.models.generateContent({
+                model: 'gemini-3-flash-preview',
+                contents: prompt,
+                config: {
+                    thinkingConfig: { thinkingBudget: 0 },
+                    maxOutputTokens: 80,
+                }
+            });
         });
-    });
-
-    return response.text || "No insight generated.";
+        return response.text || "No insight generated.";
+    } else if (activeProvider === 'openrouter' && openRouterKey) {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${openRouterKey}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": window.location.origin,
+            },
+            body: JSON.stringify({
+                model: openRouterModel,
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 100
+            })
+        });
+        
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message || 'OpenRouter Error');
+        return data.choices?.[0]?.message?.content || "No insight generated.";
+    }
   } catch (error: any) {
-    console.error("Gemini Insight Error:", error);
+    console.error("AI Insight Error:", error);
     if (error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
         return "Quota Exceeded. API usage limit reached.";
     }
     return "Unable to generate market insight.";
   }
+  return "AI not configured correctly.";
 };
 
 export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
-    if (!ai) {
-        return [];
-    }
+    if (!isAIConfigured()) return [];
 
     try {
-        const response = await retryWithBackoff(async () => {
-            return await ai!.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: `Find the top 5 most recent and relevant news headlines regarding Gold (XAUUSD), US Economy, or Fed Interest Rates from the last 48 hours.
-                
-                Return a JSON array of objects with these properties:
-                - title: string (The headline)
-                - time: string (e.g. "2 hours ago", "Today")
-                - source: string (Publisher name)
-                
-                Strictly return ONLY the JSON array.`,
-                config: {
-                    tools: [{ googleSearch: {} }],
-                    responseMimeType: "application/json",
-                }
+        if (activeProvider === 'gemini' && ai) {
+            const response = await retryWithBackoff(async () => {
+                return await ai!.models.generateContent({
+                    model: 'gemini-3-flash-preview',
+                    contents: `Find the top 5 most recent and relevant news headlines regarding Gold (XAUUSD), US Economy, or Fed Interest Rates from the last 48 hours.
+                    
+                    Return a JSON array of objects with these properties:
+                    - title: string (The headline)
+                    - time: string (e.g. "2 hours ago", "Today")
+                    - source: string (Publisher name)
+                    
+                    Strictly return ONLY the JSON array.`,
+                    config: {
+                        tools: [{ googleSearch: {} }],
+                        responseMimeType: "application/json",
+                    }
+                });
             });
-        });
 
-        const rawText = response.text;
-        let newsData: any[] = [];
-        
-        try {
-            newsData = JSON.parse(rawText || '[]');
-        } catch (e) {
-            console.error("Failed to parse news JSON", e);
-            return [];
+            const rawText = response.text;
+            let newsData: any[] = [];
+            try {
+                newsData = JSON.parse(rawText || '[]');
+            } catch (e) {
+                console.error("Failed to parse news JSON", e);
+                return [];
+            }
+
+            const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+            return newsData.map((item, index) => {
+                const matchingChunk = groundingChunks.find((c: any) => 
+                    c.web?.title?.includes(item.source) || c.web?.title?.includes(item.title)
+                );
+                return {
+                    id: `news-${index}`,
+                    title: item.title,
+                    time: item.time,
+                    source: item.source,
+                    url: matchingChunk?.web?.uri || groundingChunks[index]?.web?.uri, 
+                    type: 'News'
+                };
+            });
+
+        } else if (activeProvider === 'openrouter' && openRouterKey) {
+            // OpenRouter fallback (no grounding/search tool standard guarantee)
+            // We ask the model to provide URLs if it knows them (e.g. Perplexity)
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${openRouterKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.origin,
+                },
+                body: JSON.stringify({
+                    model: openRouterModel,
+                    messages: [{ 
+                        role: "user", 
+                        content: `List 5 recent news headlines relevant to Gold (XAUUSD) or the US Economy.
+                        Return a strict JSON array of objects with keys: "title", "time", "source", and "url" (if known).
+                        Do not include markdown formatting.` 
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message || 'OpenRouter Error');
+            
+            let content = data.choices?.[0]?.message?.content || '[]';
+            // Clean markdown code blocks if present
+            content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            const newsData = JSON.parse(content);
+            return newsData.map((item: any, index: number) => ({
+                id: `or-news-${index}`,
+                title: item.title,
+                time: item.time || 'Recent',
+                source: item.source || 'Market News',
+                url: item.url,
+                type: 'News'
+            }));
         }
 
-        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-        
-        return newsData.map((item, index) => {
-            const matchingChunk = groundingChunks.find((c: any) => 
-                c.web?.title?.includes(item.source) || c.web?.title?.includes(item.title)
-            );
-            
-            return {
-                id: `news-${index}`,
-                title: item.title,
-                time: item.time,
-                source: item.source,
-                url: matchingChunk?.web?.uri || groundingChunks[index]?.web?.uri, 
-                type: 'News'
-            };
-        });
-
     } catch (error: any) {
-        console.error("Gemini News Error:", error);
+        console.error("News Fetch Error:", error);
         if (error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
             return [{
                 id: 'quota-error',
@@ -177,9 +261,10 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
                 source: 'System',
                 time: 'Now',
                 type: 'Alert',
-                url: 'https://aistudio.google.com/app/plan_information'
+                url: activeProvider === 'gemini' ? 'https://aistudio.google.com/app/plan_information' : 'https://openrouter.ai/activity'
             }];
         }
         return [];
     }
+    return [];
 };

@@ -7,7 +7,7 @@ import TransactionTable from './components/TransactionTable';
 import NewsList from './components/NewsList';
 import ApiKeyModal from './components/ApiKeyModal'; // Import Modal
 import { StatMetric, PriceDataPoint, NewsItem } from './types';
-import { getMarketInsight, getLiveGoldNews, isGeminiConfigured, saveApiKey } from './services/geminiService'; // Import auth helpers
+import { getMarketInsight, getLiveGoldNews, isAIConfigured, saveConfig } from './services/geminiService'; // Import auth helpers
 import { fetchDailyGoldPrices, generateMockHistory } from './services/marketDataService';
 import { trackEvent } from './services/analytics';
 
@@ -46,7 +46,7 @@ const App: React.FC = () => {
 
   // Check API Key on mount
   useEffect(() => {
-    setApiKeyConfigured(isGeminiConfigured());
+    setApiKeyConfigured(isAIConfigured());
   }, []);
 
   // 1. Fetch Market Data
@@ -114,7 +114,7 @@ const App: React.FC = () => {
 
   // Function to simulate getting AI insight
   const fetchInsight = async (price: string, change: number, history: number[]) => {
-    if (!isGeminiConfigured()) return;
+    if (!isAIConfigured()) return;
 
     setLoadingInsight(true);
     
@@ -127,7 +127,7 @@ const App: React.FC = () => {
   };
 
   const fetchNews = async () => {
-      if (!isGeminiConfigured()) return;
+      if (!isAIConfigured()) return;
       setLoadingNews(true);
       const liveNews = await getLiveGoldNews();
       setNews(liveNews);
@@ -147,11 +147,11 @@ const App: React.FC = () => {
       }
   }, [currentHistory, apiKeyConfigured]);
 
-  const handleSaveApiKey = (key: string) => {
-      saveApiKey(key);
+  const handleSaveConfig = (key: string, provider: 'gemini' | 'openrouter', model?: string) => {
+      saveConfig(key, provider, model);
       setApiKeyConfigured(true);
       setIsApiKeyModalOpen(false);
-      trackEvent('api_key_configured');
+      trackEvent('api_key_configured', { provider });
       
       // Trigger refresh of AI components immediately
       if (currentHistory.length > 0) {
@@ -169,7 +169,7 @@ const App: React.FC = () => {
       <ApiKeyModal 
         isOpen={isApiKeyModalOpen} 
         onClose={() => setIsApiKeyModalOpen(false)} 
-        onSave={handleSaveApiKey} 
+        onSave={handleSaveConfig} 
       />
 
       {/* Main Container */}
