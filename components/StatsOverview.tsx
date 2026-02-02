@@ -73,10 +73,13 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
   const displayItems = loading ? new Array(4).fill(null) : displayMetrics;
 
   return (
-    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col gap-6">
+    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col gap-6 relative overflow-hidden">
       
+      {/* Background Gradient Effect */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+
       {/* Header with Title and Unit Switcher */}
-      <div className="flex flex-row justify-between items-center pb-2">
+      <div className="flex flex-row justify-between items-center pb-2 relative z-10">
         <h2 className="text-white font-medium text-lg tracking-tight">Market Overview</h2>
         
         <div className="flex items-center gap-3">
@@ -105,7 +108,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
       </div>
 
       {/* Grid of Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50 border-t border-zinc-800/30 pt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50 border-t border-zinc-800/30 pt-6 relative z-10">
         {displayItems.map((metric, index) => {
            if (loading || !metric) {
                return (
