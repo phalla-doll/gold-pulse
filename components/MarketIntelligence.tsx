@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ExternalLink, Globe, Clock, AlertTriangle, ZapOff, Lock } from 'lucide-react';
+import { Sparkles, ExternalLink, Globe, Clock, AlertTriangle, ZapOff, Lock, RotateCw } from 'lucide-react';
 import { NewsItem } from '../types';
 import { trackEvent } from '../services/analytics';
 
@@ -10,6 +10,7 @@ interface MarketIntelligenceProps {
   news: NewsItem[]; // New prop for live news
   apiKeyConfigured: boolean;
   onConnect: () => void;
+  onRefresh?: () => void;
 }
 
 // Helper for consistent shimmer skeletons
@@ -33,7 +34,7 @@ const formatInsight = (text: string) => {
   });
 };
 
-const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect }) => {
+const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect, onRefresh }) => {
   const isQuotaError = insight.includes('Quota') || insight.includes('Limit Exceeded');
 
   return (
@@ -74,6 +75,23 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
                         <h4 className={`text-xs font-semibold uppercase tracking-wider ${isQuotaError ? 'text-rose-400' : 'text-lime-400'}`}>
                             {isQuotaError ? 'System Alert' : 'AI Market Insight'}
                         </h4>
+                        
+                        {/* Refresh Button */}
+                        {!isQuotaError && onRefresh && (
+                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRefresh();
+                                    trackEvent('refresh_ai_insight');
+                                }}
+                                disabled={loading}
+                                className={`ml-auto p-1 rounded-md hover:bg-white/10 text-zinc-500 hover:text-zinc-300 transition-all ${loading ? 'animate-spin cursor-not-allowed opacity-70' : ''}`}
+                                aria-label="Refresh Insight"
+                                title="Regenerate Analysis"
+                             >
+                                <RotateCw className="w-3.5 h-3.5" />
+                             </button>
+                        )}
                     </div>
                     
                     {loading ? (

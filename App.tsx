@@ -259,6 +259,7 @@ const App: React.FC = () => {
                     news={news} 
                     apiKeyConfigured={apiKeyConfigured}
                     onConnect={() => setIsApiKeyModalOpen(true)}
+                    onRefresh={() => fetchInsight(currentPriceStr, currentChange, currentHistory)}
                 />
             </div>
         </div>
