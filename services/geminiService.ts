@@ -121,7 +121,7 @@ export const getMarketInsight = async (
       - Trend: ${priceHistory.slice(-5).join(' -> ')}
       
       TASK:
-      Provide a 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver.
+      Provide a 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver. Acceptacle response word count is around 40-60 words.
   `;
 
   try {
