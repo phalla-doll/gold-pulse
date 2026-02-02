@@ -167,19 +167,8 @@ export const getMarketInsight = async (
         if (msg.content && msg.content.trim()) {
             return msg.content;
         }
-
-        // Priority 2: Explicit reasoning field (e.g. DeepSeek R1, Z.AI)
-        if (msg.reasoning && msg.reasoning.trim()) {
-            return msg.reasoning;
-        }
-
-        // Priority 3: Nested reasoning details (e.g. some experimental models)
-        if (Array.isArray(msg.reasoning_details)) {
-             const textDetail = msg.reasoning_details.find((d: any) => d.text && d.type === 'reasoning.text');
-             if (textDetail && textDetail.text) return textDetail.text;
-        }
         
-        return "No insight generated.";
+        return "No insight generated. Please try again!";
     }
   } catch (error: any) {
     console.error("AI Insight Error:", error);
