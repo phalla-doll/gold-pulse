@@ -61,7 +61,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
       <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
       {/* Header */}
-      <div className="flex justify-between items-start mb-6 z-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 z-10 gap-4 sm:gap-0">
         <div>
            <div className="flex items-center gap-2 mb-1">
              <h3 className="text-white font-medium text-lg">Gold Price Action</h3>
@@ -83,7 +83,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
            </p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
              {/* Unit Switcher */}
              <div className="relative">
                 <select 

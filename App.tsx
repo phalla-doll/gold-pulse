@@ -170,7 +170,7 @@ const App: React.FC = () => {
       />
 
       {/* Main Container */}
-      <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-6">
+      <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-4 md:gap-6">
         
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -181,14 +181,14 @@ const App: React.FC = () => {
              </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
              {/* API Key Button */}
              <button
                 onClick={() => {
                   setIsApiKeyModalOpen(true);
                   trackEvent('click_connect_api_key', { location: 'header' });
                 }}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-medium ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-medium whitespace-nowrap ${
                     apiKeyConfigured 
                     ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20' 
                     : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 animate-pulse'
@@ -198,19 +198,22 @@ const App: React.FC = () => {
                 {apiKeyConfigured ? 'AI Connected' : 'Connect API Key'}
              </button>
 
-             <div className="flex bg-[#09090b] p-1 rounded-xl border border-zinc-800">
-                {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
-                    <button
-                        key={range}
-                        onClick={() => {
-                          setSelectedRange(range);
-                          trackEvent('select_time_range', { range });
-                        }}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    >
-                        {range}
-                    </button>
-                ))}
+             {/* Range Selector - Scrollable on mobile */}
+             <div className="flex-1 md:flex-none overflow-x-auto pb-1 md:pb-0 -mx-1 md:mx-0">
+                 <div className="flex bg-[#09090b] p-1 rounded-xl border border-zinc-800 min-w-max mx-1 md:mx-0">
+                    {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
+                        <button
+                            key={range}
+                            onClick={() => {
+                              setSelectedRange(range);
+                              trackEvent('select_time_range', { range });
+                            }}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            {range}
+                        </button>
+                    ))}
+                 </div>
              </div>
           </div>
         </header>
@@ -219,7 +222,7 @@ const App: React.FC = () => {
         <StatsOverview metrics={statsData} loading={loadingStats} />
 
         {/* Middle Row: Price Chart & Volume */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[400px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[400px]">
             <div className="lg:col-span-2 h-[300px] lg:h-full">
                 <PriceChart range={selectedRange} data={chartData} />
             </div>
@@ -229,7 +232,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Bottom Row: Transactions & News */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[450px]">
             <div className="lg:col-span-2 h-full min-h-[400px]">
                 <TransactionTable currentGoldPrice={currentGoldPrice} />
             </div>
