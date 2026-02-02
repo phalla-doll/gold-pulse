@@ -59,9 +59,9 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-black min-h-screen text-zinc-100 font-sans p-4 md:p-8 flex justify-center">
+    <div className="bg-black min-h-screen text-zinc-100 font-sans p-4 md:p-8 overflow-x-hidden">
       {/* Main Container - max-width constrained for dashboard look */}
-      <div className="w-full max-w-[1600px] flex flex-col gap-6">
+      <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-6">
         
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

@@ -26,7 +26,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
   const displayItems = loading ? new Array(4).fill(null) : metrics;
 
   return (
-    <div className="bg-[#18181b] p-8 rounded-3xl border border-white/5 flex flex-col">
+    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col">
       {/* Grid of Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50">
         {displayItems.map((metric, index) => {
