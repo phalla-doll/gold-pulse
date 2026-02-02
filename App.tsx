@@ -176,48 +176,60 @@ const App: React.FC = () => {
       <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-4 md:gap-6">
         
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-3">
-             <div>
-                <h1 className="text-xl font-medium tracking-tight">GoldPulse Dashboard</h1>
-                <p className="text-zinc-500 text-xs">Global Spot & Futures • Live Data Integration</p>
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-2">
+          {/* Title Section */}
+          <div>
+             <h1 className="text-3xl font-medium tracking-tight text-white mb-2">GoldPulse Dashboard</h1>
+             <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-500"></span>
+                </span>
+                <p className="text-zinc-400 text-xs font-medium tracking-wide uppercase">Global Spot & Futures • Live Data Integration</p>
              </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Controls Section */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+             
+             {/* Range Selector */}
+             <div className="w-full sm:w-auto bg-[#09090b] p-1.5 rounded-xl border border-zinc-800 flex relative z-0">
+                {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
+                    <button
+                        key={range}
+                        onClick={() => {
+                          setSelectedRange(range);
+                          trackEvent('select_time_range', { range });
+                        }}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 relative z-10 ${
+                            selectedRange === range 
+                            ? 'bg-[#27272a] text-white shadow-sm ring-1 ring-white/10' 
+                            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                        }`}
+                    >
+                        {range}
+                    </button>
+                ))}
+             </div>
+
+             {/* Divider (Desktop) */}
+             <div className="hidden sm:block w-px h-8 bg-zinc-800"></div>
+
              {/* API Key Button */}
              <button
                 onClick={() => {
                   setIsApiKeyModalOpen(true);
                   trackEvent('click_connect_api_key', { location: 'header' });
                 }}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-medium whitespace-nowrap ${
+                className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border transition-all text-xs font-semibold tracking-wide whitespace-nowrap shadow-sm ${
                     apiKeyConfigured 
-                    ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20' 
-                    : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 animate-pulse'
+                    ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20 hover:border-lime-400/30' 
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
                 }`}
              >
-                <Key className="w-3.5 h-3.5" />
-                {apiKeyConfigured ? 'AI Connected' : 'Connect API Key'}
+                <Key className={`w-3.5 h-3.5 ${apiKeyConfigured ? 'text-lime-400' : 'text-zinc-500'}`} />
+                {apiKeyConfigured ? 'AI Enabled' : 'Connect AI'}
              </button>
-
-             {/* Range Selector - Scrollable on mobile */}
-             <div className="flex-1 md:flex-none overflow-x-auto pb-1 md:pb-0 -mx-1 md:mx-0">
-                 <div className="flex bg-[#09090b] p-1 rounded-xl border border-zinc-800 min-w-max mx-1 md:mx-0">
-                    {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
-                        <button
-                            key={range}
-                            onClick={() => {
-                              setSelectedRange(range);
-                              trackEvent('select_time_range', { range });
-                            }}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            {range}
-                        </button>
-                    ))}
-                 </div>
-             </div>
           </div>
         </header>
 
