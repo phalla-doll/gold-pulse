@@ -40,6 +40,34 @@ export const removeApiKey = () => {
     initializeAI();
 };
 
+// Helper: Exponential Backoff
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function retryWithBackoff<T>(
+    operation: () => Promise<T>, 
+    retries = 3, 
+    delay = 2000, 
+    factor = 2
+): Promise<T> {
+    try {
+        return await operation();
+    } catch (error: any) {
+        const isQuotaError = 
+            error?.status === 429 || 
+            error?.code === 429 ||
+            error?.message?.includes('429') || 
+            error?.message?.includes('RESOURCE_EXHAUSTED') ||
+            error?.message?.includes('quota');
+
+        if (isQuotaError && retries > 0) {
+            console.warn(`Quota hit, retrying in ${delay}ms... (${retries} attempts left)`);
+            await wait(delay);
+            return retryWithBackoff(operation, retries - 1, delay * factor, factor);
+        }
+        throw error;
+    }
+}
+
 export const getMarketInsight = async (
   currentPrice: string,
   change: number,
@@ -48,7 +76,6 @@ export const getMarketInsight = async (
   recentEvents: string[] = []
 ): Promise<string> => {
   if (!ai) {
-    // Fallback message if no key
     return "AI Insights require a Gemini API Key. Click the key icon in the header to configure.";
   }
 
@@ -66,44 +93,52 @@ export const getMarketInsight = async (
       Provide a 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 0 },
-        maxOutputTokens: 80,
-      }
+    const response = await retryWithBackoff(async () => {
+         // Force non-null assertion because we check !ai at start, 
+         // but retry wrapper context implies it might be lost if we were stricter. 
+         // For this logic, ai is stable.
+         return await ai!.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+            config: {
+                thinkingConfig: { thinkingBudget: 0 },
+                maxOutputTokens: 80,
+            }
+        });
     });
 
     return response.text || "No insight generated.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Insight Error:", error);
-    return "Unable to generate market insight. Please check your API Key quota.";
+    if (error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
+        return "Quota Exceeded. API usage limit reached.";
+    }
+    return "Unable to generate market insight.";
   }
 };
 
 export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
     if (!ai) {
-        // Return empty if no key; the UI will show empty state or we can handle it there
         return [];
     }
 
     try {
-        // We use Search Grounding to get real news.
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: `Find the top 5 most recent and relevant news headlines regarding Gold (XAUUSD), US Economy, or Fed Interest Rates from the last 48 hours.
-            
-            Return a JSON array of objects with these properties:
-            - title: string (The headline)
-            - time: string (e.g. "2 hours ago", "Today")
-            - source: string (Publisher name)
-            
-            Strictly return ONLY the JSON array.`,
-            config: {
-                tools: [{ googleSearch: {} }],
-                responseMimeType: "application/json",
-            }
+        const response = await retryWithBackoff(async () => {
+            return await ai!.models.generateContent({
+                model: 'gemini-3-flash-preview',
+                contents: `Find the top 5 most recent and relevant news headlines regarding Gold (XAUUSD), US Economy, or Fed Interest Rates from the last 48 hours.
+                
+                Return a JSON array of objects with these properties:
+                - title: string (The headline)
+                - time: string (e.g. "2 hours ago", "Today")
+                - source: string (Publisher name)
+                
+                Strictly return ONLY the JSON array.`,
+                config: {
+                    tools: [{ googleSearch: {} }],
+                    responseMimeType: "application/json",
+                }
+            });
         });
 
         const rawText = response.text;
@@ -133,8 +168,18 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
             };
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Gemini News Error:", error);
+        if (error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
+            return [{
+                id: 'quota-error',
+                title: 'Live News Unavailable: Quota Exceeded',
+                source: 'System',
+                time: 'Now',
+                type: 'Alert',
+                url: 'https://aistudio.google.com/app/plan_information'
+            }];
+        }
         return [];
     }
 };
