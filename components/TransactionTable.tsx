@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, Info } from 'lucide-react';
+import { Search, Info } from 'lucide-react';
 import { CountryGoldHolding } from '../types';
 
 interface TransactionTableProps {
@@ -55,7 +55,7 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
             </div>
         </div>
         
-        <div className="flex gap-3 w-full md:w-auto">
+        <div className="flex gap-3 w-full md:w-auto justify-end">
             <div className="relative group flex-1 md:flex-none">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-3.5 h-3.5 group-focus-within:text-lime-400" />
                 <input 
@@ -64,10 +64,6 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
                     className="bg-[#09090b] text-zinc-300 text-xs pl-9 pr-4 py-2 rounded-xl border border-zinc-800 focus:border-lime-400 focus:outline-none w-full md:w-40 transition-colors placeholder:text-zinc-600"
                 />
             </div>
-            <button className="flex items-center space-x-2 bg-[#09090b] text-zinc-500 px-3 py-2 rounded-xl border border-zinc-800 hover:text-zinc-300 hover:border-zinc-700 transition-colors shrink-0">
-                <span className="text-xs font-medium">Filter</span>
-                <Filter className="w-3.5 h-3.5" />
-            </button>
         </div>
       </div>
 
