@@ -110,47 +110,28 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
       {/* Grid of Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-zinc-800/30 pt-6 relative z-10">
         {displayItems.map((metric, index) => {
-           // Responsive Border Logic
-           // Mobile (1 col): All except last need bottom border
-           // Tablet (2 cols): 0&1 need bottom border. 0&2 need right border.
-           // Desktop (4 cols): 0,1,2 need right border. No bottom borders.
-           
+           // Responsive Border & Padding Logic
            let borderClass = "border-zinc-800/50 ";
-           
-           // Mobile Defaults (Stack)
-           if (index < 3) borderClass += "border-b md:border-b-0 ";
-           
-           // Tablet (Grid 2x2)
-           // Item 0: Bottom & Right
-           if (index === 0) borderClass += "md:border-b md:border-r lg:border-b-0 ";
-           // Item 1: Bottom only
-           if (index === 1) borderClass += "md:border-b lg:border-b-0 ";
-           // Item 2: Right only
-           if (index === 2) borderClass += "md:border-r ";
-           
-           // Desktop (Grid 4x1)
-           // Items 0, 1, 2 get right border
-           if (index < 3) borderClass += "lg:border-r ";
+           let paddingClass = "py-6 px-0 "; // Base padding
 
-           // Padding logic to create spacing around the borders
-           // Mobile: Vertical padding
-           let paddingClass = "py-8 px-0 ";
-           // Tablet: 
-           // 0: pr-8 pb-8
-           // 1: pl-8 pb-8
-           // 2: pr-8 pt-8
-           // 3: pl-8 pt-8
-           // Desktop:
-           // All: py-0
-           // 0: pr-8
-           // 1: px-8
-           // 2: px-8
-           // 3: pl-8
+           // --- BORDERS ---
+           if (index === 0) borderClass += "border-b md:border-r lg:border-b-0 ";
+           if (index === 1) borderClass += "border-b md:border-b lg:border-r lg:border-b-0 ";
+           if (index === 2) borderClass += "border-b md:border-b-0 md:border-r lg:border-r ";
+           if (index === 3) borderClass += ""; // No borders for last item default
 
-           if (index === 0) paddingClass += "md:pr-8 md:pb-8 lg:pb-0 lg:pr-8 lg:pl-0 ";
-           if (index === 1) paddingClass += "md:pl-8 md:pb-8 lg:pb-0 lg:px-8 ";
-           if (index === 2) paddingClass += "md:pr-8 md:pt-8 lg:pt-0 lg:px-8 ";
-           if (index === 3) paddingClass += "md:pl-8 md:pt-8 lg:pt-0 lg:pl-8 lg:pr-0 ";
+           // --- PADDING ---
+           // Tablet (md)
+           if (index === 0) paddingClass += "md:pr-8 md:pb-8 ";
+           if (index === 1) paddingClass += "md:pl-8 md:pb-8 ";
+           if (index === 2) paddingClass += "md:pr-8 md:pt-8 ";
+           if (index === 3) paddingClass += "md:pl-8 md:pt-8 ";
+           
+           // Desktop (lg) - Unified vertical padding
+           if (index === 0) paddingClass += "lg:py-0 lg:pr-8 lg:pl-0 ";
+           if (index === 1) paddingClass += "lg:py-0 lg:px-8 ";
+           if (index === 2) paddingClass += "lg:py-0 lg:px-8 ";
+           if (index === 3) paddingClass += "lg:py-0 lg:pl-8 lg:pr-0 ";
 
 
            if (loading || !metric) {
