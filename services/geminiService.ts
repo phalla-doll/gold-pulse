@@ -1,9 +1,44 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { NewsItem } from "../types";
 
-// Initialize Gemini Client
-const apiKey = process.env.API_KEY || '';
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+let ai: GoogleGenAI | null = null;
+const STORAGE_KEY = 'gemini_api_key';
+
+// Initialize Gemini Client with fallback to Local Storage
+const initializeAI = (): boolean => {
+    // Priority: 1. Env Variable (if built-in), 2. Local Storage
+    const apiKey = process.env.API_KEY || localStorage.getItem(STORAGE_KEY) || '';
+    
+    if (apiKey) {
+        try {
+            ai = new GoogleGenAI({ apiKey });
+            return true;
+        } catch (e) {
+            console.error("Failed to initialize Gemini client", e);
+            return false;
+        }
+    }
+    return false;
+};
+
+// Attempt initialization on module load
+initializeAI();
+
+export const isGeminiConfigured = (): boolean => {
+    return !!ai;
+};
+
+export const saveApiKey = (key: string) => {
+    localStorage.setItem(STORAGE_KEY, key);
+    initializeAI();
+};
+
+export const removeApiKey = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    ai = null;
+    // Re-check env var just in case
+    initializeAI();
+};
 
 export const getMarketInsight = async (
   currentPrice: string,
@@ -13,7 +48,8 @@ export const getMarketInsight = async (
   recentEvents: string[] = []
 ): Promise<string> => {
   if (!ai) {
-    return "API Key not configured. Please check your environment variables.";
+    // Fallback message if no key
+    return "AI Insights require a Gemini API Key. Click the key icon in the header to configure.";
   }
 
   try {
@@ -42,19 +78,18 @@ export const getMarketInsight = async (
     return response.text || "No insight generated.";
   } catch (error) {
     console.error("Gemini Insight Error:", error);
-    return "Unable to generate market insight at this time.";
+    return "Unable to generate market insight. Please check your API Key quota.";
   }
 };
 
 export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
     if (!ai) {
-        console.warn("No API Key for News");
+        // Return empty if no key; the UI will show empty state or we can handle it there
         return [];
     }
 
     try {
         // We use Search Grounding to get real news.
-        // We ask for JSON format to easily parse into our UI.
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Find the top 5 most recent and relevant news headlines regarding Gold (XAUUSD), US Economy, or Fed Interest Rates from the last 48 hours.
@@ -81,15 +116,9 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
             return [];
         }
 
-        // Extract grounding metadata to get URLs
         const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
         
-        // Map pseudo-JSON to our type, trying to link to sources if possible
-        // Note: In a real complex app we would match the grounding chunk to the specific text span.
-        // For this simple dashboard, we will just grab the first available relevant URL or leave it blank.
-        
         return newsData.map((item, index) => {
-            // Simple heuristic to assign a source URL from chunks if available
             const matchingChunk = groundingChunks.find((c: any) => 
                 c.web?.title?.includes(item.source) || c.web?.title?.includes(item.title)
             );
@@ -99,7 +128,7 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
                 title: item.title,
                 time: item.time,
                 source: item.source,
-                url: matchingChunk?.web?.uri || groundingChunks[index]?.web?.uri, // Fallback to index match
+                url: matchingChunk?.web?.uri || groundingChunks[index]?.web?.uri, 
                 type: 'News'
             };
         });

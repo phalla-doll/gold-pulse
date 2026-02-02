@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { Key } from 'lucide-react'; // Import Key icon
 import StatsOverview from './components/StatsOverview';
 import PriceChart from './components/PriceChart';
 import VolumeChart from './components/VolumeChart';
 import TransactionTable from './components/TransactionTable';
 import NewsList from './components/NewsList';
+import ApiKeyModal from './components/ApiKeyModal'; // Import Modal
 import { StatMetric, PriceDataPoint, NewsItem } from './types';
-import { getMarketInsight, getLiveGoldNews } from './services/geminiService';
+import { getMarketInsight, getLiveGoldNews, isGeminiConfigured, saveApiKey } from './services/geminiService'; // Import auth helpers
 import { fetchDailyGoldPrices, generateMockHistory } from './services/marketDataService';
 
 // Constants for calculations
-// Approx 6.8 billion oz of gold above ground (World Gold Council)
 const EST_GLOBAL_SUPPLY_OZ = 6830000000; 
 
-// Initial Mock Data Structure (will be updated by API)
+// Initial Mock Data Structure
 const initialStats: StatMetric[] = [
   { label: 'Gold Price (USD)', value: '$2,342.10', change: 2.5, data: [2200, 2250, 2230, 2300, 2320, 2290, 2342] },
   { label: 'Market Cap (T)', value: '16.0 T', change: 2.5, data: [15.5, 15.6, 15.8, 15.9, 16.0, 15.9, 16.0] },
@@ -26,13 +27,25 @@ const App: React.FC = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [selectedRange, setSelectedRange] = useState('1M');
   
+  // API Key State
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+
   // State for dynamic data
   const [statsData, setStatsData] = useState<StatMetric[]>(initialStats);
   const [chartData, setChartData] = useState<PriceDataPoint[]>([]);
   const [currentGoldPrice, setCurrentGoldPrice] = useState<number>(2342.10);
+  const [currentHistory, setCurrentHistory] = useState<number[]>([]);
+  const [currentChange, setCurrentChange] = useState<number>(0);
+  const [currentPriceStr, setCurrentPriceStr] = useState<string>('');
   
   // State for News
   const [news, setNews] = useState<NewsItem[]>([]);
+
+  // Check API Key on mount
+  useEffect(() => {
+    setApiKeyConfigured(isGeminiConfigured());
+  }, []);
 
   // 1. Fetch Market Data
   const fetchData = async () => {
@@ -43,7 +56,7 @@ const App: React.FC = () => {
     
     let priceData: PriceDataPoint[] = [];
     let currentPriceNum = 2342.10;
-    let currentPriceStr = "$2,342.10";
+    let priceStr = "$2,342.10";
     let change = 2.5;
     let priceHistory: number[] = [];
     let volatility = 1.2;
@@ -52,7 +65,7 @@ const App: React.FC = () => {
        // Use Real Data
        priceData = apiResult.data;
        currentPriceNum = apiResult.currentPrice;
-       currentPriceStr = `$${currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+       priceStr = `$${currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
        change = apiResult.change;
        priceHistory = apiResult.history;
        volatility = apiResult.volatility || 1.2;
@@ -65,102 +78,95 @@ const App: React.FC = () => {
        
        currentPriceNum = latest;
        priceHistory = priceData.map(d => d.price);
-       currentPriceStr = `$${latest.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+       priceStr = `$${latest.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
        change = mockChange;
        // Mock volatility
        volatility = 0.85;
     }
 
     setCurrentGoldPrice(currentPriceNum);
+    setCurrentHistory(priceHistory);
+    setCurrentChange(change);
+    setCurrentPriceStr(priceStr);
 
     // Calculate Dynamic Market Cap based on Price
-    // Market Cap = Price * Supply
     const marketCapValue = (currentPriceNum * EST_GLOBAL_SUPPLY_OZ);
     const marketCapTrillions = (marketCapValue / 1000000000000).toFixed(1) + " T";
-    
-    // Create Market Cap History (Mirrors price history)
     const marketCapHistory = priceHistory.map(p => (p * EST_GLOBAL_SUPPLY_OZ) / 1000000000000);
 
-    // Volatility Data (Generate plausible sparkline based on recent volatility)
+    // Volatility Data 
     const volatilityHistory = new Array(7).fill(0).map(() => Math.abs(volatility + (Math.random() - 0.5) * 0.2));
 
     // Update Stats
     setStatsData(prev => {
          const newStats = [...prev];
-         
-         // Update Price Card
-         newStats[0] = {
-           ...newStats[0],
-           value: currentPriceStr,
-           change: parseFloat(change.toFixed(2)),
-           data: priceHistory
-         };
-
-         // Update Market Cap Card (Linked to Price)
-         newStats[1] = {
-            ...newStats[1],
-            value: marketCapTrillions,
-            change: parseFloat(change.toFixed(2)), // Correlation is 1:1 with price for this simplified model
-            data: marketCapHistory
-         };
-
-         // Update Volatility (Calculated)
-         newStats[3] = {
-             ...newStats[3],
-             value: `${volatility.toFixed(2)}%`,
-             change: parseFloat(((volatility - 1.0) * 10).toFixed(1)), // Mock change vs avg
-             data: volatilityHistory
-         };
-
+         newStats[0] = { ...newStats[0], value: priceStr, change: parseFloat(change.toFixed(2)), data: priceHistory };
+         newStats[1] = { ...newStats[1], value: marketCapTrillions, change: parseFloat(change.toFixed(2)), data: marketCapHistory };
+         newStats[3] = { ...newStats[3], value: `${volatility.toFixed(2)}%`, change: parseFloat(((volatility - 1.0) * 10).toFixed(1)), data: volatilityHistory };
          return newStats;
     });
 
     setChartData(priceData);
     setLoadingStats(false);
-
-    // 2. Fetch Insight based on the data we just got
-    fetchInsight(currentPriceStr, change, priceHistory);
-    
-    // 3. Fetch Live News
-    fetchNews();
   };
 
   // Function to simulate getting AI insight
   const fetchInsight = async (price: string, change: number, history: number[]) => {
+    if (!isGeminiConfigured()) return;
+
     setLoadingInsight(true);
     
-    // Prepare context data
     const summary = `Gold closing at ${price}, ${change > 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)}% over the period.`;
-    const recentEvents = [
-        "Fed Interest Rate Decision upcoming",
-        "Global central bank accumulation continues",
-        "Geopolitical uncertainty in Eastern Europe"
-    ];
+    const recentEvents = ["Fed Interest Rate Decision upcoming", "Global central bank accumulation"];
 
-    const result = await getMarketInsight(
-        price, 
-        change, 
-        summary, 
-        history, 
-        recentEvents
-    );
-    
+    const result = await getMarketInsight(price, change, summary, history, recentEvents);
     setInsight(result);
     setLoadingInsight(false);
   };
 
   const fetchNews = async () => {
+      if (!isGeminiConfigured()) return;
       const liveNews = await getLiveGoldNews();
       setNews(liveNews);
   };
 
+  // Initial load
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Fetch AI content once data is loaded AND key is present
+  useEffect(() => {
+      if (currentHistory.length > 0 && apiKeyConfigured) {
+          fetchInsight(currentPriceStr, currentChange, currentHistory);
+          fetchNews();
+      }
+  }, [currentHistory, apiKeyConfigured]);
+
+  const handleSaveApiKey = (key: string) => {
+      saveApiKey(key);
+      setApiKeyConfigured(true);
+      setIsApiKeyModalOpen(false);
+      // Trigger refresh of AI components immediately
+      if (currentHistory.length > 0) {
+        setLoadingInsight(true);
+        // Small delay to ensure state propagates
+        setTimeout(() => {
+            fetchInsight(currentPriceStr, currentChange, currentHistory);
+            fetchNews();
+        }, 100);
+      }
+  };
+
   return (
     <div className="bg-black min-h-screen text-zinc-100 font-sans p-4 md:p-8 overflow-x-hidden">
-      {/* Main Container - max-width constrained for dashboard look */}
+      <ApiKeyModal 
+        isOpen={isApiKeyModalOpen} 
+        onClose={() => setIsApiKeyModalOpen(false)} 
+        onSave={handleSaveApiKey} 
+      />
+
+      {/* Main Container */}
       <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-6">
         
         {/* Header */}
@@ -172,16 +178,31 @@ const App: React.FC = () => {
              </div>
           </div>
 
-          <div className="flex bg-[#09090b] p-1 rounded-xl border border-zinc-800">
-           {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
-              <button
-                  key={range}
-                  onClick={() => setSelectedRange(range)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                  {range}
-              </button>
-           ))}
+          <div className="flex gap-3">
+             {/* API Key Button */}
+             <button
+                onClick={() => setIsApiKeyModalOpen(true)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-medium ${
+                    apiKeyConfigured 
+                    ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20' 
+                    : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20 animate-pulse'
+                }`}
+             >
+                <Key className="w-3.5 h-3.5" />
+                {apiKeyConfigured ? 'AI Connected' : 'Connect API Key'}
+             </button>
+
+             <div className="flex bg-[#09090b] p-1 rounded-xl border border-zinc-800">
+                {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
+                    <button
+                        key={range}
+                        onClick={() => setSelectedRange(range)}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    >
+                        {range}
+                    </button>
+                ))}
+             </div>
           </div>
         </header>
 
