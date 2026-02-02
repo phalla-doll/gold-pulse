@@ -78,7 +78,7 @@ const HoldingsTable: React.FC = () => {
                             </div>
                         </td>
                         <td className="py-3 text-right text-zinc-200 font-medium tabular-nums">
-                            {item.holdings.toLocaleString()} <span className="text-zinc-600">T</span>
+                            {item.holdings.toLocaleString()} <span className="text-zinc-600 text-[10px]">T</span>
                         </td>
                         <td className="py-3 text-right text-zinc-400 font-mono text-xs tabular-nums">{item.value}</td>
                         <td className="py-3 text-right">
