@@ -50,11 +50,11 @@ const App: React.FC = () => {
   }, []);
 
   // 1. Fetch Market Data
-  const fetchData = async () => {
+  const fetchData = async (range: string) => {
     setLoadingStats(true);
     
     // Attempt to fetch real data
-    const apiResult = await fetchDailyGoldPrices();
+    const apiResult = await fetchDailyGoldPrices(range);
     
     let priceData: PriceDataPoint[] = [];
     let currentPriceNum = 2342.10;
@@ -72,8 +72,8 @@ const App: React.FC = () => {
        priceHistory = apiResult.history;
        volatility = apiResult.volatility || 1.2;
     } else {
-       // Fallback: Generate consistent mock history
-       priceData = generateMockHistory();
+       // Fallback: Generate consistent mock history based on range
+       priceData = generateMockHistory(range);
        const latest = priceData[priceData.length-1].price;
        const first = priceData[0].price;
        const mockChange = ((latest - first) / first) * 100;
@@ -118,7 +118,7 @@ const App: React.FC = () => {
 
     setLoadingInsight(true);
     
-    const summary = `Gold closing at ${price}, ${change > 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)}% over the period.`;
+    const summary = `Gold closing at ${price}, ${change > 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)}% over the selected period.`;
     const recentEvents = ["Fed Interest Rate Decision upcoming", "Global central bank accumulation"];
 
     const result = await getMarketInsight(price, change, summary, history, recentEvents);
@@ -134,10 +134,10 @@ const App: React.FC = () => {
       setLoadingNews(false);
   };
 
-  // Initial load
+  // Fetch Data when Range Changes
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(selectedRange);
+  }, [selectedRange]);
 
   // Fetch AI content once data is loaded AND key is present
   useEffect(() => {

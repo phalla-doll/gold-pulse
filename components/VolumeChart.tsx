@@ -22,15 +22,30 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   };
 
 const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
-  // If data is missing volume (common in some FX feeds), generate pseudo-volume based on price volatility
-  // or just filter for last 7 days for the view
-  const displayData = data.slice(-7).map(d => ({
-    ...d,
-    // Format day for axis (e.g., "Mon", "Tue" or "23")
-    day: new Date(d.time).toLocaleDateString('en-US', { weekday: 'short' }),
-    // Fallback if API returns 0 or undefined for volume
-    volume: d.volume || Math.floor(Math.random() * 50000 + 20000)
-  }));
+  // Simple slicing logic for display limits
+  // If data set is large (e.g. 1Y or 6M), we only show last ~20 bars for bar chart readability
+  // unless we want to show all. 
+  // Let's show a max of 30 bars to keep it clean.
+  const displayCount = 30;
+  const displayData = data.slice(-displayCount).map(d => {
+    const date = new Date(d.time);
+    let label = '';
+    
+    if (range === '1D') {
+        label = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (range === '7D') {
+        label = date.toLocaleDateString([], { weekday: 'short' }) + ' ' + date.getHours() + 'h';
+    } else {
+        label = date.toLocaleDateString('en-US', { weekday: 'short' });
+    }
+
+    return {
+        ...d,
+        label,
+        // Fallback if API returns 0 or undefined for volume
+        volume: d.volume || Math.floor(Math.random() * 50000 + 20000)
+    };
+  });
   
   const totalVolume = displayData.reduce((acc, curr) => acc + curr.volume, 0);
   const avgVolume = totalVolume / (displayData.length || 1);
@@ -46,7 +61,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
                <h3 className="text-white font-medium text-lg">Volume Overview</h3>
                <div className="flex space-x-6 mt-2">
                     <div>
-                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">Avg Daily</span>
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">Avg Volume</span>
                         <span className="text-white text-lg font-semibold tabular-nums">{(avgVolume / 1000).toFixed(1)}K</span>
                     </div>
                     <div>
@@ -56,7 +71,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
                </div>
             </div>
             <div className="bg-[#27272a] px-2 py-1 rounded text-xs text-zinc-400 font-medium">
-                Last 7 Days
+                {range} View
             </div>
           </div>
 
@@ -74,11 +89,12 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
                   ))}
                 </Bar>
                 <XAxis 
-                    dataKey="day" 
+                    dataKey="label" 
                     axisLine={false} 
                     tickLine={false} 
                     tick={{ fill: '#71717a', fontSize: 10 }}
                     dy={10}
+                    interval="preserveStartEnd"
                 />
               </BarChart>
             </ResponsiveContainer>

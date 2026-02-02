@@ -11,9 +11,21 @@ interface PriceChartProps {
 
 const CustomTooltip = ({ active, payload, label, unitLabel }: any) => {
   if (active && payload && payload.length) {
+    let formattedLabel = label;
+    // Attempt to format label nicely in tooltip if it looks like ISO
+    try {
+        const date = new Date(label);
+        if (!isNaN(date.getTime())) {
+             formattedLabel = date.toLocaleString([], { 
+                 month: 'short', day: 'numeric', 
+                 hour: '2-digit', minute: '2-digit' 
+             });
+        }
+    } catch(e) {}
+
     return (
       <div className="bg-[#18181b]/90 p-3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md">
-        <p className="text-zinc-400 text-xs mb-1 font-medium">{label}</p>
+        <p className="text-zinc-400 text-xs mb-1 font-medium">{formattedLabel}</p>
         <p className="text-white text-sm font-bold flex items-center gap-2 tabular-nums">
           ${payload[0].value.toFixed(2)} <span className="text-xs font-normal text-zinc-500">{unitLabel}</span>
         </p>
@@ -52,7 +64,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
   }, [data, unit]);
 
   const startPrice = processedData.length > 0 ? processedData[0].price : 0;
-  // Calculate change over the visible period based on the displayed unit values (math remains same percentage wise)
+  // Calculate change over the visible period
   const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
 
   return (
@@ -67,7 +79,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
              <h3 className="text-white font-medium text-lg">Gold Price Action</h3>
              <span className="flex items-center text-[10px] font-medium uppercase tracking-wider text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20">
                 <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse mr-1.5"></div>
-                {range === '1D' ? 'Live' : 'Daily Close'}
+                {range === '1D' ? 'Live' : range}
              </span>
            </div>
            <div className="flex items-baseline gap-3">
@@ -125,9 +137,22 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
                 dy={10}
                 minTickGap={30}
                 tickFormatter={(val) => {
-                    if (val.includes(':')) return val; 
                     const date = new Date(val);
-                    return `${date.getMonth() + 1}/${date.getDate()}`; 
+                    if (isNaN(date.getTime())) return val;
+
+                    if (range === '1D') {
+                        // 14:00
+                        return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    } else if (range === '7D') {
+                        // Mon 14h
+                        return `${date.toLocaleDateString([], {weekday: 'short'})} ${date.getHours()}h`;
+                    } else if (range === '1M' || range === '6M') {
+                        // 5/20
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    } else {
+                        // Jan 24
+                        return date.toLocaleDateString([], {month: 'short', year: '2-digit'});
+                    }
                 }}
             />
             <YAxis 

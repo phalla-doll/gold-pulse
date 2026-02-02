@@ -3,16 +3,45 @@ import { PriceDataPoint } from '../types';
 // REPLACE THIS WITH YOUR REAL API KEY FROM TWELVE DATA
 const TWELVE_DATA_API_KEY = '6fbdc412ae924882bf727ae84fa452b6'; 
 
-export const fetchDailyGoldPrices = async (): Promise<{ data: PriceDataPoint[], currentPrice: number, change: number, history: number[], volatility: number } | null> => {
+export const fetchDailyGoldPrices = async (range: string = '1M'): Promise<{ data: PriceDataPoint[], currentPrice: number, change: number, history: number[], volatility: number } | null> => {
   if (!TWELVE_DATA_API_KEY) {
     console.warn("Twelve Data API Key not set. Using fallback mock data.");
     return null; // Triggers fallback in UI
   }
 
+  // Determine API parameters based on range
+  let interval = '1day';
+  let outputsize = 30;
+
+  switch(range) {
+      case '1D': 
+          interval = '15min'; 
+          outputsize = 96; // Approx 24 hours of 15m candles
+          break;
+      case '7D': 
+          interval = '2h'; 
+          outputsize = 84; // 7 days * ~12 candles/day
+          break;
+      case '1M': 
+          interval = '1day'; 
+          outputsize = 30; 
+          break;
+      case '6M': 
+          interval = '1day'; 
+          outputsize = 130; // Approx trading days in 6 months
+          break;
+      case '1Y': 
+          interval = '1week'; 
+          outputsize = 52; 
+          break;
+      default: 
+          interval = '1day'; 
+          outputsize = 30;
+  }
+
   try {
-    // Fetch Daily data (30 days)
     const response = await fetch(
-      `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1day&outputsize=30&apikey=${TWELVE_DATA_API_KEY}`
+      `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${interval}&outputsize=${outputsize}&apikey=${TWELVE_DATA_API_KEY}`
     );
 
     const result = await response.json();
@@ -26,29 +55,38 @@ export const fetchDailyGoldPrices = async (): Promise<{ data: PriceDataPoint[], 
     const reversedData = result.values.reverse();
 
     const formattedData: PriceDataPoint[] = reversedData.map((item: any) => ({
-      time: item.datetime, // YYYY-MM-DD
+      // Ensure ISO format for compatibility (replace space with T)
+      time: item.datetime.replace(' ', 'T'), 
       price: parseFloat(item.close),
       volume: item.volume ? parseInt(item.volume) : undefined
     }));
 
     const currentPrice = formattedData[formattedData.length - 1].price;
-    const previousPrice = formattedData[formattedData.length - 2].price;
+    const startPrice = formattedData[0].price;
     
-    // Calculate 24h Change (vs previous close)
-    const change = ((currentPrice - previousPrice) / previousPrice) * 100;
+    // Calculate Change over the selected period
+    const change = ((currentPrice - startPrice) / startPrice) * 100;
 
     // Sparkline history (just the numbers)
     const history = formattedData.map(d => d.price);
 
-    // Calculate Volatility (Standard Deviation of daily returns)
+    // Calculate Volatility (Standard Deviation of returns)
     const returns = [];
     for (let i = 1; i < formattedData.length; i++) {
         const r = (formattedData[i].price - formattedData[i-1].price) / formattedData[i-1].price;
         returns.push(r);
     }
-    const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const variance = returns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) / returns.length;
-    const dailyVolatility = Math.sqrt(variance) * 100; // as percentage
+    
+    // Safety check for empty returns
+    let dailyVolatility = 0.8;
+    if (returns.length > 0) {
+        const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+        const variance = returns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) / returns.length;
+        dailyVolatility = Math.sqrt(variance) * 100;
+        
+        // Adjust volatility scale perception for different intervals
+        if (range === '1D') dailyVolatility *= 4; // Scale up for visual relevance on small moves
+    }
 
     return {
       data: formattedData,
@@ -65,24 +103,57 @@ export const fetchDailyGoldPrices = async (): Promise<{ data: PriceDataPoint[], 
 };
 
 // Fallback generator if API fails or no key
-export const generateMockHistory = (): PriceDataPoint[] => {
+export const generateMockHistory = (range: string = '1M'): PriceDataPoint[] => {
   const data: PriceDataPoint[] = [];
-  const today = new Date();
+  const end = new Date();
   let price = 2330.50;
+  
+  let count = 30;
+  let timeStep = 24 * 60 * 60 * 1000; // 1 day default
 
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(today.getDate() - i);
+  switch (range) {
+      case '1D': 
+          count = 48; 
+          timeStep = 30 * 60 * 1000; // 30 mins
+          break;
+      case '7D': 
+          count = 84; 
+          timeStep = 2 * 60 * 60 * 1000; // 2 hours
+          break;
+      case '1M': 
+          count = 30; 
+          timeStep = 24 * 60 * 60 * 1000; // 1 day
+          break;
+      case '6M': 
+          count = 126; // Approx trading days
+          timeStep = 24 * 60 * 60 * 1000; 
+          break;
+      case '1Y': 
+          count = 52; 
+          timeStep = 7 * 24 * 60 * 60 * 1000; // 1 week
+          break;
+  }
+
+  for (let i = count; i >= 0; i--) {
+    const date = new Date(end.getTime() - (i * timeStep));
     
-    // Random daily movement
-    const move = (Math.random() - 0.45) * 35; 
+    // Random Walk Logic
+    // Smaller moves for intraday, larger for daily/weekly
+    const volatility = (range === '1D' || range === '7D') ? 1.5 : 15;
+    const move = (Math.random() - 0.48) * volatility; 
     price += move;
 
-    // Generate mock volume correlated with price movement size
-    const volume = Math.floor(20000 + Math.random() * 30000 + (Math.abs(move) * 1000));
+    // Generate mock volume
+    // Intraday volume often has U-shape (high open/close), but random is fine for mock
+    const volume = Math.floor(1000 + Math.random() * 5000 + (Math.abs(move) * 500));
+
+    // Format time label
+    let timeLabel = date.toISOString(); 
+    // Remove milliseconds for cleaner raw data
+    timeLabel = timeLabel.split('.')[0]; 
 
     data.push({
-      time: date.toISOString().split('T')[0], // YYYY-MM-DD
+      time: timeLabel, 
       price: parseFloat(price.toFixed(2)),
       volume: volume
     });
