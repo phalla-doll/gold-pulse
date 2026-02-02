@@ -23,6 +23,13 @@ const tooltips = [
   "Standard deviation of daily returns over the last 30 days."
 ];
 
+// Helper for consistent shimmer skeletons
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={`relative overflow-hidden bg-zinc-800/50 ${className}`}>
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+  </div>
+);
+
 type UnitType = 'oz' | 'g' | 'chi';
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false }) => {
@@ -150,17 +157,17 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
                return (
                 <div key={`skeleton-${index}`} className={`relative flex flex-col justify-between ${borderClass} ${paddingClass}`}>
                     <div className="mb-6 flex justify-between items-start">
-                        <div className="w-10 h-10 bg-zinc-800/50 rounded-full animate-pulse border border-white/5" />
+                        <Skeleton className="w-10 h-10 rounded-full border border-white/5" />
                     </div>
                     <div className="flex-1 flex flex-col">
-                        <div className="h-3 w-20 bg-zinc-800/50 rounded animate-pulse mb-3" />
+                        <Skeleton className="h-3 w-20 rounded mb-3" />
                         <div className="flex justify-between items-end mt-auto">
                             <div>
-                                <div className="h-8 w-32 bg-zinc-800/50 rounded animate-pulse mb-3" />
-                                <div className="h-6 w-24 bg-zinc-800/50 rounded animate-pulse" />
+                                <Skeleton className="h-8 w-32 rounded mb-3" />
+                                <Skeleton className="h-6 w-24 rounded" />
                             </div>
-                            <div className="w-24 h-12 rounded-lg bg-zinc-800/30 overflow-hidden relative">
-                                <div className="w-full h-full bg-zinc-800/20 animate-pulse" />
+                            <div className="w-24 h-12 rounded-lg bg-zinc-800/20 overflow-hidden relative">
+                                <Skeleton className="w-full h-full" />
                             </div>
                         </div>
                     </div>

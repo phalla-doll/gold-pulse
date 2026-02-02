@@ -4,6 +4,7 @@ import { CountryGoldHolding } from '../types';
 
 interface TransactionTableProps {
     currentGoldPrice?: number;
+    loading?: boolean;
 }
 
 // Data based on approx World Gold Council holdings (Tonnes)
@@ -16,7 +17,14 @@ const baseHoldings = [
   { rank: 6, country: 'China', holdings: 2264.3, percentage: 4.3, change: +10.5, flagCode: 'cn' },
 ];
 
-const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 2342.10 }) => {
+// Helper for consistent shimmer skeletons
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={`relative overflow-hidden bg-zinc-800/50 ${className}`}>
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+  </div>
+);
+
+const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 2342.10, loading = false }) => {
   // Conversion constant: 1 Tonne = 32,150.7 Troy Ounces
   const TONNE_TO_OZ = 32150.7;
 
@@ -84,45 +92,83 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
                     </tr>
                 </thead>
                 <tbody className="text-sm">
-                    {holdings.map((item) => (
-                        <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/30 last:border-0">
-                            <td className="py-3 text-center text-zinc-500 text-sm tabular-nums">#{item.rank}</td>
-                            <td className="py-3">
-                                <div className="flex items-center space-x-3">
-                                    <img 
-                                        src={`https://flagcdn.com/w40/${item.flagCode}.png`} 
-                                        alt={item.country} 
-                                        className="w-5 h-3.5 object-cover rounded shadow-sm opacity-80 group-hover:opacity-100 transition-opacity" 
-                                    />
-                                    <span className="text-zinc-200 font-medium text-sm">{item.country}</span>
-                                </div>
-                            </td>
-                            <td className="py-3 text-right text-zinc-200 font-medium tabular-nums text-sm">
-                                {item.holdings.toLocaleString()} <span className="text-zinc-600 text-xs font-normal">T</span>
-                            </td>
-                            <td className="py-3 text-right text-lime-400/90 font-medium text-sm tabular-nums">{item.value}</td>
-                            <td className="py-3 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                    <span className="text-zinc-300 text-sm tabular-nums">{item.percentage}%</span>
-                                    <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full bg-lime-400/50 group-hover:bg-lime-400 transition-colors" 
-                                            style={{ width: `${item.percentage}%` }}
-                                        ></div>
+                    {loading ? (
+                        // Skeleton Rows
+                        [...Array(6)].map((_, i) => (
+                            <tr key={`skel-${i}`} className="border-b border-zinc-800/30 last:border-0">
+                                <td className="py-3 text-center">
+                                    <Skeleton className="w-4 h-4 mx-auto rounded-sm" />
+                                </td>
+                                <td className="py-3">
+                                    <div className="flex items-center space-x-3">
+                                        <Skeleton className="w-5 h-3.5 rounded-sm" />
+                                        <Skeleton className="w-24 h-4 rounded-sm" />
                                     </div>
-                                </div>
-                            </td>
-                            <td className="py-3 text-right pr-4">
-                                 {item.change === 0 ? (
-                                     <span className="text-zinc-700">-</span>
-                                 ) : (
-                                     <span className={`text-xs font-medium px-2 py-0.5 rounded tabular-nums ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
-                                         {item.change > 0 ? '+' : ''}{item.change} T
-                                     </span>
-                                 )}
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                                <td className="py-3 text-right">
+                                     <div className="flex justify-end">
+                                        <Skeleton className="w-16 h-4 rounded-sm" />
+                                     </div>
+                                </td>
+                                <td className="py-3 text-right">
+                                    <div className="flex justify-end">
+                                        <Skeleton className="w-16 h-4 rounded-sm bg-zinc-800/70" />
+                                    </div>
+                                </td>
+                                <td className="py-3 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <Skeleton className="w-8 h-4 rounded-sm" />
+                                        <Skeleton className="w-16 h-1 rounded-full" />
+                                    </div>
+                                </td>
+                                <td className="py-3 text-right pr-4">
+                                     <div className="flex justify-end">
+                                        <Skeleton className="w-12 h-5 rounded-md" />
+                                     </div>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        holdings.map((item) => (
+                            <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/30 last:border-0">
+                                <td className="py-3 text-center text-zinc-500 text-sm tabular-nums">#{item.rank}</td>
+                                <td className="py-3">
+                                    <div className="flex items-center space-x-3">
+                                        <img 
+                                            src={`https://flagcdn.com/w40/${item.flagCode}.png`} 
+                                            alt={item.country} 
+                                            className="w-5 h-3.5 object-cover rounded shadow-sm opacity-80 group-hover:opacity-100 transition-opacity" 
+                                        />
+                                        <span className="text-zinc-200 font-medium text-sm">{item.country}</span>
+                                    </div>
+                                </td>
+                                <td className="py-3 text-right text-zinc-200 font-medium tabular-nums text-sm">
+                                    {item.holdings.toLocaleString()} <span className="text-zinc-600 text-xs font-normal">T</span>
+                                </td>
+                                <td className="py-3 text-right text-lime-400/90 font-medium text-sm tabular-nums">{item.value}</td>
+                                <td className="py-3 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <span className="text-zinc-300 text-sm tabular-nums">{item.percentage}%</span>
+                                        <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-lime-400/50 group-hover:bg-lime-400 transition-colors" 
+                                                style={{ width: `${item.percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="py-3 text-right pr-4">
+                                     {item.change === 0 ? (
+                                         <span className="text-zinc-700">-</span>
+                                     ) : (
+                                         <span className={`text-xs font-medium px-2 py-0.5 rounded tabular-nums ${item.change > 0 ? 'text-lime-400 bg-lime-400/10' : 'text-rose-500 bg-rose-500/10'}`}>
+                                             {item.change > 0 ? '+' : ''}{item.change} T
+                                         </span>
+                                     )}
+                                </td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
           </div>

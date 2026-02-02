@@ -6,12 +6,20 @@ import { trackEvent } from '../services/analytics';
 interface NewsListProps {
   insight: string;
   loading: boolean;
+  loadingNews?: boolean;
   news: NewsItem[]; // New prop for live news
   apiKeyConfigured: boolean;
   onConnect: () => void;
 }
 
-const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfigured, onConnect }) => {
+// Helper for consistent shimmer skeletons
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={`relative overflow-hidden bg-zinc-800/50 ${className}`}>
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+  </div>
+);
+
+const NewsList: React.FC<NewsListProps> = ({ insight, loading, loadingNews = false, news, apiKeyConfigured, onConnect }) => {
   const isQuotaError = insight.includes('Quota') || insight.includes('Limit Exceeded');
 
   return (
@@ -55,9 +63,9 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                     </div>
                     
                     {loading ? (
-                        <div className="animate-pulse space-y-2 relative z-10">
-                            <div className="h-3 bg-zinc-800 rounded w-3/4"></div>
-                            <div className="h-3 bg-zinc-800 rounded w-1/2"></div>
+                        <div className="space-y-2 relative z-10">
+                            <Skeleton className="h-3 w-3/4 rounded" />
+                            <Skeleton className="h-3 w-1/2 rounded" />
                         </div>
                     ) : (
                         <div className="relative z-10">
@@ -92,8 +100,8 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                     {apiKeyConfigured && (
                         <>
                         <span className="relative flex h-2 w-2">
-                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${loading || isQuotaError ? 'bg-zinc-500' : 'bg-lime-400'}`}></span>
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${loading || isQuotaError ? 'bg-zinc-500' : 'bg-lime-500'}`}></span>
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${loading || loadingNews || isQuotaError ? 'bg-zinc-500' : 'bg-lime-400'}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${loading || loadingNews || isQuotaError ? 'bg-zinc-500' : 'bg-lime-500'}`}></span>
                         </span>
                         <span className="text-xs text-zinc-500 font-medium hidden md:inline">Updated via Google Search</span>
                         </>
@@ -123,7 +131,18 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                     </div>
                 ) : (
                     <>
-                    {news.length === 0 && !loading ? (
+                    {loadingNews ? (
+                        // Skeleton for News Items
+                        [...Array(4)].map((_, i) => (
+                             <div key={`news-skel-${i}`} className="p-4 rounded-2xl border border-zinc-800 bg-[#09090b]">
+                                <Skeleton className="h-4 w-3/4 rounded mb-3" />
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-3 w-16 rounded" />
+                                    <Skeleton className="h-3 w-12 rounded" />
+                                </div>
+                             </div>
+                        ))
+                    ) : news.length === 0 ? (
                         <div className="text-center py-8 text-zinc-500 text-xs">
                             {isQuotaError ? "News feed temporarily unavailable." : "No recent news found."}
                         </div>

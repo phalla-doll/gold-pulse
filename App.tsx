@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [insight, setInsight] = useState<string>('');
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingNews, setLoadingNews] = useState(false);
   const [selectedRange, setSelectedRange] = useState('1M');
   
   // API Key State
@@ -127,8 +128,10 @@ const App: React.FC = () => {
 
   const fetchNews = async () => {
       if (!isGeminiConfigured()) return;
+      setLoadingNews(true);
       const liveNews = await getLiveGoldNews();
       setNews(liveNews);
+      setLoadingNews(false);
   };
 
   // Initial load
@@ -234,12 +237,13 @@ const App: React.FC = () => {
         {/* Bottom Row: Transactions & News */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[450px]">
             <div className="lg:col-span-2 h-full min-h-[400px]">
-                <TransactionTable currentGoldPrice={currentGoldPrice} />
+                <TransactionTable currentGoldPrice={currentGoldPrice} loading={loadingStats} />
             </div>
             <div className="h-full min-h-[400px]">
                 <NewsList 
                     insight={insight} 
                     loading={loadingInsight} 
+                    loadingNews={loadingNews}
                     news={news} 
                     apiKeyConfigured={apiKeyConfigured}
                     onConnect={() => setIsApiKeyModalOpen(true)}
