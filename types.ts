@@ -20,6 +20,7 @@ export interface NewsItem {
   title: string;
   time: string;
   source: string;
+  url?: string;
   type: 'News' | 'Alert' | 'Report';
 }
 

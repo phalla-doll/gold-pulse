@@ -4,8 +4,8 @@ import PriceChart from './components/PriceChart';
 import VolumeChart from './components/VolumeChart';
 import TransactionTable from './components/TransactionTable';
 import NewsList from './components/NewsList';
-import { StatMetric, PriceDataPoint } from './types';
-import { getMarketInsight } from './services/geminiService';
+import { StatMetric, PriceDataPoint, NewsItem } from './types';
+import { getMarketInsight, getLiveGoldNews } from './services/geminiService';
 import { fetchDailyGoldPrices, generateMockHistory } from './services/marketDataService';
 
 // Constants for calculations
@@ -30,6 +30,9 @@ const App: React.FC = () => {
   const [statsData, setStatsData] = useState<StatMetric[]>(initialStats);
   const [chartData, setChartData] = useState<PriceDataPoint[]>([]);
   const [currentGoldPrice, setCurrentGoldPrice] = useState<number>(2342.10);
+  
+  // State for News
+  const [news, setNews] = useState<NewsItem[]>([]);
 
   // 1. Fetch Market Data
   const fetchData = async () => {
@@ -117,6 +120,9 @@ const App: React.FC = () => {
 
     // 2. Fetch Insight based on the data we just got
     fetchInsight(currentPriceStr, change, priceHistory);
+    
+    // 3. Fetch Live News
+    fetchNews();
   };
 
   // Function to simulate getting AI insight
@@ -141,6 +147,11 @@ const App: React.FC = () => {
     
     setInsight(result);
     setLoadingInsight(false);
+  };
+
+  const fetchNews = async () => {
+      const liveNews = await getLiveGoldNews();
+      setNews(liveNews);
   };
 
   useEffect(() => {
@@ -193,7 +204,7 @@ const App: React.FC = () => {
                 <TransactionTable currentGoldPrice={currentGoldPrice} />
             </div>
             <div className="h-full min-h-[400px]">
-                <NewsList insight={insight} loading={loadingInsight} />
+                <NewsList insight={insight} loading={loadingInsight} news={news} />
             </div>
         </div>
 

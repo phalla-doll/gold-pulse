@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, Info } from 'lucide-react';
+import { Search, Filter, Info, AlertCircle } from 'lucide-react';
 import { CountryGoldHolding } from '../types';
 
 interface TransactionTableProps {
@@ -37,19 +37,10 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
         <div className="flex items-center gap-2">
             <h3 className="text-white font-medium text-lg">Top Gold Reserves</h3>
             
-            {/* Tooltip Wrapper */}
-            <div className="relative group">
-                <Info className="w-4 h-4 text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" />
-                
-                {/* Floating Tooltip Popup */}
-                <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-[#09090b] border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none translate-y-2 group-hover:translate-y-0">
-                    {/* Arrow Pointer */}
-                    <div className="absolute -top-1.5 left-1 w-3 h-3 bg-[#09090b] border-t border-l border-zinc-800 transform rotate-45"></div>
-                    {/* Content */}
-                    <p className="text-xs text-zinc-400 font-medium leading-snug relative z-10">
-                        Official central bank gold holdings. Values are dynamically calculated based on the current live spot price of <b>${currentGoldPrice.toLocaleString()}</b> per oz.
-                    </p>
-                </div>
+            {/* Source Label */}
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700/50">
+                <AlertCircle className="w-3 h-3 text-zinc-500" />
+                <span className="text-[10px] text-zinc-500 font-medium">Source: World Gold Council (Q4 2024)</span>
             </div>
         </div>
         
@@ -76,7 +67,7 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
                     <th className="pb-3 text-center w-12 font-medium">Rank</th>
                     <th className="pb-3 font-medium">Country</th>
                     <th className="pb-3 font-medium text-right">Holdings</th>
-                    <th className="pb-3 font-medium text-right">Value</th>
+                    <th className="pb-3 font-medium text-right">Value (Live)</th>
                     <th className="pb-3 font-medium text-right">% of Reserves</th>
                     <th className="pb-3 font-medium text-right pr-4">Change</th>
                 </tr>
@@ -98,7 +89,7 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
                         <td className="py-3 text-right text-zinc-200 font-medium tabular-nums text-sm">
                             {item.holdings.toLocaleString()} <span className="text-zinc-600 text-xs font-normal">T</span>
                         </td>
-                        <td className="py-3 text-right text-zinc-400 text-sm tabular-nums">{item.value}</td>
+                        <td className="py-3 text-right text-lime-400/90 font-medium text-sm tabular-nums">{item.value}</td>
                         <td className="py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
                                 <span className="text-zinc-300 text-sm tabular-nums">{item.percentage}%</span>
