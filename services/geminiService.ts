@@ -132,7 +132,7 @@ export const getMarketInsight = async (
                 contents: prompt,
                 config: {
                     thinkingConfig: { thinkingBudget: 0 },
-                    maxOutputTokens: 80,
+                    maxOutputTokens: 120,
                 }
             });
         });
