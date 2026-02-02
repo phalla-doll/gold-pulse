@@ -9,6 +9,7 @@ import ApiKeyModal from './components/ApiKeyModal'; // Import Modal
 import { StatMetric, PriceDataPoint, NewsItem } from './types';
 import { getMarketInsight, getLiveGoldNews, isGeminiConfigured, saveApiKey } from './services/geminiService'; // Import auth helpers
 import { fetchDailyGoldPrices, generateMockHistory } from './services/marketDataService';
+import { trackEvent } from './services/analytics';
 
 // Constants for calculations
 const EST_GLOBAL_SUPPLY_OZ = 6830000000; 
@@ -147,6 +148,8 @@ const App: React.FC = () => {
       saveApiKey(key);
       setApiKeyConfigured(true);
       setIsApiKeyModalOpen(false);
+      trackEvent('api_key_configured');
+      
       // Trigger refresh of AI components immediately
       if (currentHistory.length > 0) {
         setLoadingInsight(true);
@@ -181,7 +184,10 @@ const App: React.FC = () => {
           <div className="flex gap-3">
              {/* API Key Button */}
              <button
-                onClick={() => setIsApiKeyModalOpen(true)}
+                onClick={() => {
+                  setIsApiKeyModalOpen(true);
+                  trackEvent('click_connect_api_key', { location: 'header' });
+                }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-medium ${
                     apiKeyConfigured 
                     ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20' 
@@ -196,7 +202,10 @@ const App: React.FC = () => {
                 {['1D', '7D', '1M', '6M', '1Y'].map((range) => (
                     <button
                         key={range}
-                        onClick={() => setSelectedRange(range)}
+                        onClick={() => {
+                          setSelectedRange(range);
+                          trackEvent('select_time_range', { range });
+                        }}
                         className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedRange === range ? 'bg-[#27272a] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
                     >
                         {range}

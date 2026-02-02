@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
 import { ArrowUp, ArrowDown, HelpCircle, DollarSign, Activity, Users, BarChart2, Scale } from 'lucide-react';
 import { StatMetric } from '../types';
+import { trackEvent } from '../services/analytics';
 
 interface StatsOverviewProps {
   metrics: StatMetric[];
@@ -82,7 +83,11 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
              <div className="relative">
                 <select 
                     value={unit}
-                    onChange={(e) => setUnit(e.target.value as UnitType)}
+                    onChange={(e) => {
+                      const newUnit = e.target.value as UnitType;
+                      setUnit(newUnit);
+                      trackEvent('change_overview_unit', { unit: newUnit });
+                    }}
                     disabled={loading}
                     className="appearance-none bg-[#27272a] hover:bg-[#323238] text-white text-xs font-medium pl-3 pr-8 py-1.5 rounded-lg border border-zinc-800 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >

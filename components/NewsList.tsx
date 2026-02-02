@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, ExternalLink, Globe, Clock, AlertTriangle, ZapOff, Lock } from 'lucide-react';
 import { NewsItem } from '../types';
+import { trackEvent } from '../services/analytics';
 
 interface NewsListProps {
   insight: string;
@@ -61,7 +62,13 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                                 <p className="text-xs text-rose-200/80 leading-relaxed font-medium">
                                     We've hit the Gemini API usage limit for now.
                                 </p>
-                                <a href="https://aistudio.google.com/app/plan_information" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 w-fit text-[10px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-2.5 py-1.5 rounded-lg border border-rose-500/20 transition-colors">
+                                <a 
+                                    href="https://aistudio.google.com/app/plan_information" 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    onClick={() => trackEvent('check_quota_status')}
+                                    className="inline-flex items-center gap-1.5 w-fit text-[10px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-2.5 py-1.5 rounded-lg border border-rose-500/20 transition-colors"
+                                >
                                     Check Quota Status <ExternalLink className="w-3 h-3" />
                                 </a>
                             </div>
@@ -101,7 +108,10 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                         Connect your Gemini API key to access real-time market news and analysis.
                     </p>
                     <button 
-                        onClick={onConnect}
+                        onClick={() => {
+                            onConnect();
+                            trackEvent('click_connect_api_key', { location: 'news_feed_locked' });
+                        }}
                         className="text-xs font-semibold bg-lime-400 hover:bg-lime-500 text-black px-4 py-2 rounded-lg transition-colors shadow-lg shadow-lime-400/10"
                     >
                         Connect API Key
@@ -122,6 +132,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
                                 href={item.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
+                                onClick={() => trackEvent('click_news_link', { title: item.title, source: item.source })}
                                 className={`group block p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
                                     isAlert 
                                     ? 'bg-rose-950/10 border-rose-500/20 hover:border-rose-500/40' 

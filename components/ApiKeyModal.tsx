@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Key, ShieldCheck, Lock } from 'lucide-react';
+import { trackEvent } from '../services/analytics';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="bg-[#18181b] rounded-2xl border border-zinc-800 w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
         <button 
-          onClick={onClose} 
+          onClick={() => { onClose(); trackEvent('close_api_key_modal'); }} 
           className="absolute right-4 top-4 text-zinc-500 hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
@@ -36,7 +37,11 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
           To enable live AI insights and news analysis, please enter your Gemini API Key.
         </p>
 
-        <form onSubmit={(e) => { e.preventDefault(); onSave(key); }}>
+        <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            trackEvent('submit_api_key');
+            onSave(key); 
+        }}>
             <div className="relative mb-6">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input 
@@ -66,7 +71,13 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
             </button>
             
             <div className="mt-4 text-center">
-                 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-xs text-zinc-600 hover:text-lime-400 transition-colors underline decoration-dotted">
+                 <a 
+                    href="https://aistudio.google.com/app/apikey" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={() => trackEvent('click_get_api_key_external')}
+                    className="text-xs text-zinc-600 hover:text-lime-400 transition-colors underline decoration-dotted"
+                 >
                     Don't have a key? Get one here
                  </a>
             </div>

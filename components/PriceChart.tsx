@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Maximize2, Clock, ChevronDown } from 'lucide-react';
 import { PriceDataPoint } from '../types';
+import { trackEvent } from '../services/analytics';
 
 interface PriceChartProps {
   range: string;
@@ -87,7 +88,11 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
              <div className="relative">
                 <select 
                     value={unit}
-                    onChange={(e) => setUnit(e.target.value as UnitType)}
+                    onChange={(e) => {
+                      const newUnit = e.target.value as UnitType;
+                      setUnit(newUnit);
+                      trackEvent('change_chart_unit', { unit: newUnit });
+                    }}
                     className="appearance-none bg-[#27272a] hover:bg-[#323238] text-white text-xs font-medium pl-3 pr-8 py-1.5 rounded-lg border border-zinc-800 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all cursor-pointer"
                 >
                     <option value="oz">oz</option>
@@ -99,7 +104,10 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
                 </div>
              </div>
 
-             <button className="p-2 hover:bg-[#27272a] rounded-lg text-zinc-500 transition-colors">
+             <button 
+                onClick={() => trackEvent('maximize_chart')}
+                className="p-2 hover:bg-[#27272a] rounded-lg text-zinc-500 transition-colors"
+             >
                 <Maximize2 className="w-4 h-4" />
              </button>
         </div>
