@@ -15,7 +15,7 @@ const NewsList: React.FC<NewsListProps> = ({ insight, loading, news, apiKeyConfi
   const isQuotaError = insight.includes('Quota') || insight.includes('Limit Exceeded');
 
   return (
-    <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
         {/* Background Gradient Effect - Bottom Right */}
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-20 -mb-20 pointer-events-none"></div>
 

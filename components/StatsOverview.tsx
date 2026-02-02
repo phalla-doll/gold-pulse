@@ -73,7 +73,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
   const displayItems = loading ? new Array(4).fill(null) : displayMetrics;
 
   return (
-    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col gap-6 relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col gap-6 relative overflow-hidden">
       
       {/* Background Gradient Effect */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>

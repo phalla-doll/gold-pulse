@@ -36,7 +36,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
   const avgVolume = totalVolume / (displayData.length || 1);
 
   return (
-    <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
        {/* Background Gradient Effect - Bottom Left */}
        <div className="absolute bottom-0 left-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -ml-20 -mb-32 pointer-events-none"></div>
 

@@ -56,7 +56,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
   const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
 
   return (
-    <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full flex flex-col relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full flex flex-col relative overflow-hidden">
       {/* Background Gradient Effect */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 

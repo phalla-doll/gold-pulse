@@ -32,7 +32,7 @@ const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 234
   });
 
   return (
-    <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
       {/* Background Gradient Effect - Top Left */}
       <div className="absolute top-0 left-0 w-80 h-80 bg-lime-400/5 rounded-full blur-3xl -ml-32 -mt-32 pointer-events-none"></div>
 

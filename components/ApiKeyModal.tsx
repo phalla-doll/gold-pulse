@@ -15,15 +15,15 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#18181b] rounded-2xl border border-zinc-800 w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <div className="bg-[#18181b] card-noise rounded-2xl border border-zinc-800 w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
         <button 
           onClick={() => { onClose(); trackEvent('close_api_key_modal'); }} 
-          className="absolute right-4 top-4 text-zinc-500 hover:text-white transition-colors"
+          className="absolute right-4 top-4 text-zinc-500 hover:text-white transition-colors z-10"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 relative z-10">
           <div className="p-3 bg-lime-400/10 rounded-full border border-lime-400/20">
             <Key className="w-6 h-6 text-lime-400" />
           </div>
@@ -33,7 +33,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
           </div>
         </div>
 
-        <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
+        <p className="text-zinc-400 text-sm mb-6 leading-relaxed relative z-10">
           To enable live AI insights and news analysis, please enter your Gemini API Key.
         </p>
 
@@ -41,7 +41,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
             e.preventDefault(); 
             trackEvent('submit_api_key');
             onSave(key); 
-        }}>
+        }} className="relative z-10">
             <div className="relative mb-6">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input 
