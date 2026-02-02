@@ -121,7 +121,13 @@ export const getMarketInsight = async (
       - Trend: ${priceHistory.slice(-5).join(' -> ')}
       
       TASK:
-      Provide a 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver. Acceptacle output word count is around 40-60 words.
+      Provide a concise 1-sentence executive summary of the market sentiment (Bullish/Bearish/Neutral) and the key driver.
+      
+      STRICT OUTPUT RULES:
+      - Start directly with the analysis (e.g., "Bullish sentiment prevails as..." or "Market remains neutral due to...").
+      - Do NOT use introductory phrases like "Here is an analysis", "Executive Summary:", "Based on the data", or "The gold market data shows".
+      - Do NOT use titles or headers.
+      - Keep it under 50 words.
   `;
 
   try {
