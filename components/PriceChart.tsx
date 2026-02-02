@@ -1,35 +1,12 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Maximize2, Clock } from 'lucide-react';
+import { PriceDataPoint } from '../types';
 
 interface PriceChartProps {
   range: string;
+  data: PriceDataPoint[];
 }
-
-// Generate realistic intraday gold price data (Hourly)
-const generateData = () => {
-  const data = [];
-  let price = 2332.50; // Starting price
-  for (let i = 0; i < 24; i++) {
-    // Random movement with slight upward drift
-    const move = (Math.random() - 0.4) * 3; 
-    price += move;
-    
-    // Create time label like 09:00, 10:00
-    const hour = i.toString().padStart(2, '0') + ":00";
-    
-    data.push({
-      time: hour,
-      price: parseFloat(price.toFixed(2)),
-    });
-  }
-  return data;
-};
-
-const data = generateData();
-const currentPrice = data[data.length - 1].price;
-const startPrice = data[0].price;
-const change = ((currentPrice - startPrice) / startPrice) * 100;
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -38,9 +15,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p className="text-zinc-400 text-xs mb-1 font-medium">{label}</p>
         <p className="text-white text-sm font-bold flex items-center gap-2 tabular-nums">
           ${payload[0].value.toFixed(2)}
-          <span className="text-lime-400 text-xs font-normal">
-            {(Math.random() * 0.5).toFixed(2)}%
-          </span>
         </p>
       </div>
     );
@@ -48,7 +22,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const PriceChart: React.FC<PriceChartProps> = ({ range }) => {
+const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
+  const currentPrice = data.length > 0 ? data[data.length - 1].price : 0;
+  const startPrice = data.length > 0 ? data[0].price : 0;
+  // Calculate change over the visible period (not just 24h, but the chart range)
+  const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
+
   return (
     <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full flex flex-col relative overflow-hidden">
       {/* Background Gradient Effect */}
@@ -61,17 +40,19 @@ const PriceChart: React.FC<PriceChartProps> = ({ range }) => {
              <h3 className="text-white font-medium text-lg">Gold Price Action</h3>
              <span className="flex items-center text-[10px] font-medium uppercase tracking-wider text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20">
                 <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse mr-1.5"></div>
-                Live
+                {range === '1D' ? 'Live' : 'Daily Close'}
              </span>
            </div>
            <div className="flex items-baseline gap-3">
-             <span className="text-3xl font-medium text-white tracking-tight tabular-nums">${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+             <span className="text-3xl font-medium text-white tracking-tight tabular-nums">
+                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+             </span>
              <span className={`text-sm font-medium tabular-nums ${change >= 0 ? 'text-lime-400' : 'text-rose-500'}`}>
                {change >= 0 ? '+' : ''}{change.toFixed(2)}%
              </span>
            </div>
            <p className="text-zinc-500 text-xs mt-1 flex items-center gap-1">
-             <Clock className="w-3 h-3" /> Updated 2m ago
+             <Clock className="w-3 h-3" /> Updated recently
            </p>
         </div>
         
@@ -97,9 +78,15 @@ const PriceChart: React.FC<PriceChartProps> = ({ range }) => {
                 dataKey="time" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#71717a', fontSize: 11 }} 
+                tick={{ fill: '#71717a', fontSize: 10 }} 
                 dy={10}
                 minTickGap={30}
+                tickFormatter={(val) => {
+                    // Simple logic to format date vs time based on string length or pattern
+                    if (val.includes(':')) return val; // Time
+                    const date = new Date(val);
+                    return `${date.getMonth() + 1}/${date.getDate()}`; // MM/DD
+                }}
             />
             <YAxis 
                 domain={['auto', 'auto']} 
@@ -108,7 +95,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range }) => {
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: '#71717a', fontSize: 11, dx: -10 }} 
-                tickFormatter={(val) => `$${val}`}
+                tickFormatter={(val) => `$${val.toLocaleString()}`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area 
@@ -119,6 +106,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range }) => {
                 fillOpacity={1} 
                 fill="url(#colorPrice)" 
                 activeDot={{ r: 6, fill: '#a3e635', stroke: '#18181b', strokeWidth: 2 }}
+                animationDuration={1500}
             />
           </AreaChart>
         </ResponsiveContainer>

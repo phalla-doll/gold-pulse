@@ -2,17 +2,35 @@ import React from 'react';
 import { Search, Filter, Info } from 'lucide-react';
 import { CountryGoldHolding } from '../types';
 
-// Data based on approx World Gold Council holdings
-const holdings: CountryGoldHolding[] = [
-  { rank: 1, country: 'United States', holdings: 8133.5, value: '$612.4B', percentage: 69.7, change: 0, flagCode: 'us' },
-  { rank: 2, country: 'Germany', holdings: 3352.6, value: '$252.3B', percentage: 67.8, change: -0.2, flagCode: 'de' },
-  { rank: 3, country: 'Italy', holdings: 2451.8, value: '$184.5B', percentage: 65.1, change: 0, flagCode: 'it' },
-  { rank: 4, country: 'France', holdings: 2436.9, value: '$183.4B', percentage: 60.3, change: 0, flagCode: 'fr' },
-  { rank: 5, country: 'Russia', holdings: 2332.7, value: '$175.6B', percentage: 26.2, change: +3.1, flagCode: 'ru' },
-  { rank: 6, country: 'China', holdings: 2264.3, value: '$170.4B', percentage: 4.3, change: +10.5, flagCode: 'cn' },
+interface TransactionTableProps {
+    currentGoldPrice?: number;
+}
+
+// Data based on approx World Gold Council holdings (Tonnes)
+const baseHoldings = [
+  { rank: 1, country: 'United States', holdings: 8133.5, percentage: 69.7, change: 0, flagCode: 'us' },
+  { rank: 2, country: 'Germany', holdings: 3352.6, percentage: 67.8, change: -0.2, flagCode: 'de' },
+  { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 65.1, change: 0, flagCode: 'it' },
+  { rank: 4, country: 'France', holdings: 2436.9, percentage: 60.3, change: 0, flagCode: 'fr' },
+  { rank: 5, country: 'Russia', holdings: 2332.7, percentage: 26.2, change: +3.1, flagCode: 'ru' },
+  { rank: 6, country: 'China', holdings: 2264.3, percentage: 4.3, change: +10.5, flagCode: 'cn' },
 ];
 
-const HoldingsTable: React.FC = () => {
+const HoldingsTable: React.FC<TransactionTableProps> = ({ currentGoldPrice = 2342.10 }) => {
+  // Conversion constant: 1 Tonne = 32,150.7 Troy Ounces
+  const TONNE_TO_OZ = 32150.7;
+
+  const holdings: CountryGoldHolding[] = baseHoldings.map(item => {
+      // Calculate value in Billions
+      const valueRaw = (item.holdings * TONNE_TO_OZ * currentGoldPrice);
+      const valueBillion = valueRaw / 1000000000;
+      
+      return {
+          ...item,
+          value: `$${valueBillion.toFixed(1)}B`
+      };
+  });
+
   return (
     <div className="bg-[#18181b] p-6 rounded-3xl border border-white/5 h-full flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -29,7 +47,7 @@ const HoldingsTable: React.FC = () => {
                     <div className="absolute -top-1.5 left-1 w-3 h-3 bg-[#09090b] border-t border-l border-zinc-800 transform rotate-45"></div>
                     {/* Content */}
                     <p className="text-xs text-zinc-400 font-medium leading-snug relative z-10">
-                        Official central bank gold holdings reported by the World Gold Council. Values are estimated based on current spot prices.
+                        Official central bank gold holdings. Values are dynamically calculated based on the current live spot price of <b>${currentGoldPrice.toLocaleString()}</b> per oz.
                     </p>
                 </div>
             </div>

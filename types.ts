@@ -28,3 +28,9 @@ export interface HeatmapCell {
   day: string;
   intensity: number; // 0-100
 }
+
+export interface PriceDataPoint {
+  time: string; // Date string (YYYY-MM-DD) or Time
+  price: number;
+  volume?: number;
+}
