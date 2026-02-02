@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Maximize2, Clock, ChevronDown } from 'lucide-react';
+import { Clock, ChevronDown } from 'lucide-react';
 import { PriceDataPoint } from '../types';
 import { trackEvent } from '../services/analytics';
 
@@ -103,13 +103,6 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
                     <ChevronDown className="w-3 h-3" />
                 </div>
              </div>
-
-             <button 
-                onClick={() => trackEvent('maximize_chart')}
-                className="p-2 hover:bg-[#27272a] rounded-lg text-zinc-500 transition-colors"
-             >
-                <Maximize2 className="w-4 h-4" />
-             </button>
         </div>
       </div>
 
