@@ -49,10 +49,8 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
         const now = new Date();
         const diffInSeconds = Math.max(0, Math.floor((now.getTime() - lastUpdated.getTime()) / 1000));
         
-        if (diffInSeconds < 30) {
-            setTimeAgo('Updated just now');
-        } else if (diffInSeconds < 60) {
-            setTimeAgo('Updated < 1m ago');
+        if (diffInSeconds < 60) {
+            setTimeAgo(`Updated ${diffInSeconds}s ago`);
         } else if (diffInSeconds < 3600) {
             const mins = Math.floor(diffInSeconds / 60);
             setTimeAgo(`Updated ${mins}m ago`);
@@ -63,8 +61,8 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
     };
 
     calculateTimeAgo();
-    // Update every 30 seconds to keep the "ago" relative time fresh
-    const timer = setInterval(calculateTimeAgo, 30000); 
+    // Update every second to keep the seconds counter accurate
+    const timer = setInterval(calculateTimeAgo, 1000); 
     return () => clearInterval(timer);
   }, [lastUpdated]);
 
