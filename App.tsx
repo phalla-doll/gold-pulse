@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Key } from 'lucide-react'; // Import Key icon
-import StatsOverview from './components/StatsOverview';
+import MarketOverview from './components/MarketOverview';
 import PriceChart from './components/PriceChart';
 import VolumeChart from './components/VolumeChart';
-import TransactionTable from './components/TransactionTable';
-import NewsList from './components/NewsList';
+import GlobalReservesTable from './components/GlobalReservesTable';
+import MarketIntelligence from './components/MarketIntelligence';
 import ApiKeyModal from './components/ApiKeyModal'; // Import Modal
 import { StatMetric, PriceDataPoint, NewsItem } from './types';
 import { getMarketInsight, getLiveGoldNews, isAIConfigured, saveConfig } from './services/geminiService'; // Import auth helpers
@@ -234,7 +234,7 @@ const App: React.FC = () => {
         </header>
 
         {/* Top Stats Overview Card */}
-        <StatsOverview metrics={statsData} loading={loadingStats} />
+        <MarketOverview metrics={statsData} loading={loadingStats} />
 
         {/* Middle Row: Price Chart & Volume */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[400px]">
@@ -249,10 +249,10 @@ const App: React.FC = () => {
         {/* Bottom Row: Transactions & News */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[450px]">
             <div className="lg:col-span-2 h-full min-h-[400px]">
-                <TransactionTable currentGoldPrice={currentGoldPrice} loading={loadingStats} />
+                <GlobalReservesTable currentGoldPrice={currentGoldPrice} loading={loadingStats} />
             </div>
             <div className="h-full min-h-[400px]">
-                <NewsList 
+                <MarketIntelligence 
                     insight={insight} 
                     loading={loadingInsight} 
                     loadingNews={loadingNews}
