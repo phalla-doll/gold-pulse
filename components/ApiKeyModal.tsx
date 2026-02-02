@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Key, ShieldCheck, Lock, Globe, Server } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Key, ShieldCheck, Lock, Globe, Server, CheckCircle2 } from 'lucide-react';
 import { trackEvent } from '../services/analytics';
 
 interface ApiKeyModalProps {
@@ -27,6 +27,18 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
         }
     }
   }, [isOpen]);
+
+  const isValidFormat = useMemo(() => {
+    if (!key) return false;
+    const trimmedKey = key.trim();
+    if (provider === 'gemini') {
+        // Gemini keys typically start with AIza and are ~39 chars
+        return trimmedKey.startsWith('AIza') && trimmedKey.length >= 39;
+    } else {
+        // OpenRouter keys typically start with sk-or-
+        return trimmedKey.startsWith('sk-or-') && trimmedKey.length > 30;
+    }
+  }, [key, provider]);
 
   if (!isOpen) return null;
 
@@ -83,16 +95,25 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
         }} className="relative z-10">
             
             <div className="space-y-4 mb-6">
-                <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <div className="relative group">
+                    <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${isValidFormat ? 'text-lime-400' : 'text-zinc-500'}`} />
                     <input 
                         type="password" 
                         value={key}
                         onChange={(e) => setKey(e.target.value)}
-                        placeholder={provider === 'gemini' ? "Enter Gemini API Key" : "Enter OpenRouter Key"}
-                        className="w-full bg-[#09090b] border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-zinc-600 transition-colors placeholder:text-zinc-600 shadow-inner"
+                        placeholder={provider === 'gemini' ? "Enter Gemini API Key (starts with AIza...)" : "Enter OpenRouter Key (starts with sk-or-...)"}
+                        className={`w-full bg-[#09090b] border rounded-xl py-3 pl-10 pr-10 text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-zinc-600 shadow-inner ${
+                            isValidFormat 
+                            ? 'border-lime-400/50 focus:border-lime-400 focus:ring-1 focus:ring-lime-400/20' 
+                            : 'border-zinc-800 focus:border-zinc-600'
+                        }`}
                         autoFocus
                     />
+                    {isValidFormat && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in zoom-in duration-200">
+                            <CheckCircle2 className="w-4 h-4 text-lime-400" />
+                        </div>
+                    )}
                 </div>
 
                 {provider === 'openrouter' && (
