@@ -236,6 +236,14 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
         } else if (activeProvider === 'openrouter' && openRouterKey) {
             // OpenRouter fallback (no grounding/search tool standard guarantee)
             // We ask the model to provide URLs if it knows them (e.g. Perplexity)
+            
+            const today = new Date().toLocaleDateString("en-US", { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -247,7 +255,8 @@ export const getLiveGoldNews = async (): Promise<NewsItem[]> => {
                     model: openRouterModel,
                     messages: [{ 
                         role: "user", 
-                        content: `List 5 recent news headlines relevant to Gold (XAUUSD) or the US Economy.
+                        content: `Current Date: ${today}.
+                        List 5 recent news headlines relevant to Gold (XAUUSD) or the US Economy.
                         Return a strict JSON array of objects with keys: "title", "time", "source", and "url" (if known).
                         Do not include markdown formatting.` 
                     }]

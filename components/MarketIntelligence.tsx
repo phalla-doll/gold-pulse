@@ -148,7 +148,7 @@ const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ insight, loadin
                             ) : (
                                 <div className="max-h-[100px] overflow-y-auto custom-scrollbar pr-2">
                                     <p className="text-xs leading-relaxed font-medium text-zinc-300 break-words whitespace-pre-line">
-                                        {formatInsight(insight)}
+                                        {formatInsight(insight.trim())}
                                     </p>
                                 </div>
                             )}
