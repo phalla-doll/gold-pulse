@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
-import { ArrowUp, ArrowDown, HelpCircle, DollarSign, Activity, Users, BarChart2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, HelpCircle, DollarSign, Activity, Users, BarChart2, Scale } from 'lucide-react';
 import { StatMetric } from '../types';
 
 interface StatsOverviewProps {
@@ -16,23 +16,95 @@ const icons = [
 ];
 
 const tooltips = [
-  "Current global spot price for 1 Troy Ounce of Gold in US Dollars.",
+  "Current global spot price for Gold in US Dollars.",
   "Total estimated value of all above-ground gold reserves globally.",
   "Total number of outstanding derivative contracts not yet settled.",
   "Standard deviation of daily returns over the last 30 days."
 ];
 
+type UnitType = 'oz' | 'g' | 'chi';
+
 const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false }) => {
-  const displayItems = loading ? new Array(4).fill(null) : metrics;
+  const [unit, setUnit] = useState<UnitType>('oz');
+
+  // Conversion logic derived from metrics to avoid mutating props
+  const displayMetrics = useMemo(() => {
+    if (loading || metrics.length === 0) return metrics;
+
+    const baseMetric = metrics[0];
+    if (!baseMetric) return metrics;
+
+    // Parse base value (assuming "$2,342.10")
+    const rawPrice = parseFloat(baseMetric.value.replace(/[^0-9.]/g, ''));
+    
+    let convertedPrice = rawPrice;
+    let unitLabel = '/ oz';
+    let convertedData = [...baseMetric.data];
+
+    // Conversion Factors
+    // 1 Troy oz = 31.1035 g
+    // 1 Chi (Vietnam) = 3.75 g
+    // Factor from Oz to Chi: 3.75 / 31.1035 = 0.120565
+    // Price per Chi = Price per Oz * (3.75 / 31.1035)
+    
+    if (unit === 'g') {
+        const factor = 1 / 31.1035;
+        convertedPrice = rawPrice * factor;
+        convertedData = baseMetric.data.map(v => v * factor);
+        unitLabel = '/ g';
+    } else if (unit === 'chi') {
+        const factor = 3.75 / 31.1035;
+        convertedPrice = rawPrice * factor;
+        convertedData = baseMetric.data.map(v => v * factor);
+        unitLabel = '/ chi';
+    }
+
+    const newMetric: StatMetric = {
+        ...baseMetric,
+        label: `Gold Price (USD${unitLabel})`,
+        value: `$${convertedPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        data: convertedData
+    };
+
+    return [newMetric, ...metrics.slice(1)];
+  }, [metrics, loading, unit]);
+
+  const displayItems = loading ? new Array(4).fill(null) : displayMetrics;
 
   return (
-    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col">
+    <div className="bg-[#18181b] p-6 md:p-8 rounded-3xl border border-white/5 flex flex-col gap-6">
+      
+      {/* Header with Title and Unit Switcher */}
+      <div className="flex flex-row justify-between items-center pb-2">
+        <h2 className="text-white font-medium text-lg tracking-tight">Market Overview</h2>
+        
+        <div className="flex items-center gap-3">
+             <div className="relative">
+                <select 
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value as UnitType)}
+                    disabled={loading}
+                    className="appearance-none bg-[#27272a] hover:bg-[#323238] text-white text-xs font-medium pl-3 pr-8 py-1.5 rounded-lg border border-zinc-800 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <option value="oz">Troy Ounce (oz)</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="chi">Chi / Tael (3.75g)</option>
+                </select>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </div>
+             </div>
+        </div>
+      </div>
+
       {/* Grid of Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/50 border-t border-zinc-800/30 pt-6">
         {displayItems.map((metric, index) => {
            if (loading || !metric) {
                return (
-                <div key={`skeleton-${index}`} className="relative flex flex-col justify-between pt-8 lg:pt-0 pb-8 lg:pb-0 px-0 lg:px-8 first:pl-0 last:pr-0 first:pt-0 last:pb-0 lg:first:pt-0 lg:last:pb-0">
+                <div key={`skeleton-${index}`} className="relative flex flex-col justify-between pt-8 lg:pt-0 pb-8 lg:pb-0 px-0 lg:px-8 first:pl-0 last:pr-0 first:pt-0 last:pb-0 lg:first:pt-0 lg:last:pb-0 border-zinc-800/50">
                     {/* Icon Skeleton */}
                     <div className="mb-6 flex justify-between items-start">
                         <div className="w-10 h-10 bg-zinc-800/50 rounded-full animate-pulse border border-white/5" />
@@ -50,9 +122,8 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
                                 <div className="h-6 w-24 bg-zinc-800/50 rounded animate-pulse" />
                             </div>
 
-                            {/* Sparkline Skeleton with Gradient Animation */}
+                            {/* Sparkline Skeleton */}
                             <div className="w-24 h-12 rounded-lg bg-zinc-800/30 overflow-hidden relative">
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-700/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
                                 <div className="w-full h-full bg-zinc-800/20 animate-pulse" />
                             </div>
                         </div>
@@ -68,11 +139,11 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
            const color = isPositive ? "#a3e635" : "#f43f5e";
 
            return (
-             <div key={index} className="relative flex flex-col justify-between pt-8 lg:pt-0 pb-8 lg:pb-0 px-0 lg:px-8 first:pl-0 last:pr-0 first:pt-0 last:pb-0 lg:first:pt-0 lg:last:pb-0">
+             <div key={index} className="relative flex flex-col justify-between pt-8 lg:pt-0 pb-8 lg:pb-0 px-0 lg:px-8 first:pl-0 last:pr-0 first:pt-0 last:pb-0 lg:first:pt-0 lg:last:pb-0 border-zinc-800/50">
                 
                 {/* Icon */}
                 <div className="mb-6 flex justify-between items-start">
-                   <div className="w-10 h-10 bg-[#27272a] rounded-full flex items-center justify-center text-zinc-100 border border-white/5">
+                   <div className="w-10 h-10 bg-[#27272a] rounded-full flex items-center justify-center text-zinc-100 border border-white/5 shadow-inner">
                       {icons[index]}
                    </div>
                    
