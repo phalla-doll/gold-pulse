@@ -37,7 +37,10 @@ const StatCard: React.FC<StatCardProps> = ({ metric, icon }) => {
             </div>
           </div>
           
-          <div className="w-20 h-10">
+          <div className="w-20 h-10 relative overflow-hidden">
+             {/* Subtle Shimmer Overlay on Mount */}
+             <div className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-zinc-400/10 to-transparent -translate-x-full animate-[shimmer_1.5s_ease-out_forwards] pointer-events-none" />
+
              <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -52,7 +55,8 @@ const StatCard: React.FC<StatCardProps> = ({ metric, icon }) => {
                   stroke={isPositive ? "#a3e635" : "#f43f5e"} 
                   strokeWidth={2}
                   fillOpacity={1} 
-                  fill={`url(#gradient-${metric.label})`} 
+                  fill={`url(#gradient-${metric.label})`}
+                  animationDuration={2000}
                 />
               </AreaChart>
             </ResponsiveContainer>

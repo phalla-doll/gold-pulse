@@ -108,7 +108,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
                         </div>
 
                         {/* Sparkline Chart */}
-                        <div className="w-24 h-12 pb-1">
+                        <div className="w-24 h-12 pb-1 relative overflow-hidden group">
                              <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={chartData}>
                                 <defs>
@@ -124,6 +124,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ metrics, loading = false 
                                   stroke={color} 
                                   strokeWidth={2}
                                   fill={`url(#gradient-${index})`}
+                                  animationDuration={2000}
                                 />
                               </AreaChart>
                             </ResponsiveContainer>
