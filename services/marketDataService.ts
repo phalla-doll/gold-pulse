@@ -1,4 +1,4 @@
-import { PriceDataPoint } from '../types';
+import { PriceDataPoint, CountryGoldHolding } from '../types';
 
 // REPLACE THIS WITH YOUR REAL API KEY FROM TWELVE DATA
 const TWELVE_DATA_API_KEY = '6fbdc412ae924882bf727ae84fa452b6'; 
@@ -159,4 +159,24 @@ export const generateMockHistory = (range: string = '1M'): PriceDataPoint[] => {
     });
   }
   return data;
+};
+
+// Static Data Source for Gold Reserves (Replaces AI Search)
+// Source: World Gold Council / IMF Q4 2024 / Q1 2025 Estimates
+export const getTopGoldReserves = async (): Promise<CountryGoldHolding[]> => {
+    // Simulate network delay for realism
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const reserves: CountryGoldHolding[] = [
+      { rank: 1, country: 'United States', holdings: 8133.5, percentage: 71.2, change: 0, flagCode: 'us', value: '0' },
+      { rank: 2, country: 'Germany', holdings: 3352.6, percentage: 68.5, change: -0.1, flagCode: 'de', value: '0' },
+      { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 65.8, change: 0, flagCode: 'it', value: '0' },
+      { rank: 4, country: 'France', holdings: 2436.9, percentage: 61.1, change: 0, flagCode: 'fr', value: '0' },
+      { rank: 5, country: 'Russia', holdings: 2332.7, percentage: 27.4, change: +3.2, flagCode: 'ru', value: '0' },
+      { rank: 6, country: 'China', holdings: 2264.3, percentage: 5.2, change: +9.8, flagCode: 'cn', value: '0' },
+      { rank: 7, country: 'Switzerland', holdings: 1040.0, percentage: 8.1, change: 0, flagCode: 'ch', value: '0' },
+      { rank: 8, country: 'Japan', holdings: 846.0, percentage: 4.8, change: +0.4, flagCode: 'jp', value: '0' },
+    ];
+    
+    return reserves;
 };

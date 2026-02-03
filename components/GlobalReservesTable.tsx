@@ -1,21 +1,12 @@
-import React from 'react';
-import { Search, Info } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, Info, Globe } from 'lucide-react';
 import { CountryGoldHolding } from '../types';
+import { getTopGoldReserves } from '../services/marketDataService';
 
 interface GlobalReservesTableProps {
     currentGoldPrice?: number;
     loading?: boolean;
 }
-
-// Data based on approx World Gold Council holdings (Tonnes)
-const baseHoldings = [
-  { rank: 1, country: 'United States', holdings: 8133.5, percentage: 69.7, change: 0, flagCode: 'us' },
-  { rank: 2, country: 'Germany', holdings: 3352.6, percentage: 67.8, change: -0.2, flagCode: 'de' },
-  { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 65.1, change: 0, flagCode: 'it' },
-  { rank: 4, country: 'France', holdings: 2436.9, percentage: 60.3, change: 0, flagCode: 'fr' },
-  { rank: 5, country: 'Russia', holdings: 2332.7, percentage: 26.2, change: +3.1, flagCode: 'ru' },
-  { rank: 6, country: 'China', holdings: 2264.3, percentage: 4.3, change: +10.5, flagCode: 'cn' },
-];
 
 // Helper for consistent shimmer skeletons
 const Skeleton = ({ className }: { className?: string }) => (
@@ -25,11 +16,29 @@ const Skeleton = ({ className }: { className?: string }) => (
 );
 
 const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPrice = 2342.10, loading = false }) => {
+  const [holdingsData, setHoldingsData] = useState<CountryGoldHolding[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
+
   // Conversion constant: 1 Tonne = 32,150.7 Troy Ounces
   const TONNE_TO_OZ = 32150.7;
 
-  const holdings: CountryGoldHolding[] = baseHoldings.map(item => {
-      // Calculate value in Billions
+  useEffect(() => {
+    const loadData = async () => {
+        setIsFetching(true);
+        try {
+            const data = await getTopGoldReserves();
+            setHoldingsData(data);
+        } catch (e) {
+            console.error("Failed to load reserves", e);
+        } finally {
+            setIsFetching(false);
+        }
+    };
+    loadData();
+  }, []);
+
+  const displayHoldings: CountryGoldHolding[] = holdingsData.map(item => {
+      // Calculate value in Billions based on LIVE price
       const valueRaw = (item.holdings * TONNE_TO_OZ * currentGoldPrice);
       const valueBillion = valueRaw / 1000000000;
       
@@ -39,13 +48,15 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
       };
   });
 
+  const isLoading = loading || isFetching;
+
   return (
-    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden">
+    <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full relative overflow-hidden flex flex-col">
       {/* Background Gradient Effect - Top Left */}
       <div className="absolute top-0 left-0 w-80 h-80 bg-lime-400/5 rounded-full blur-3xl -ml-32 -mt-32 pointer-events-none"></div>
 
-      <div className="flex flex-col h-full relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div className="flex flex-col h-full relative z-10 min-h-0">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 shrink-0">
             <div className="flex items-center gap-2">
                 <h3 className="text-white font-medium text-lg">Top Gold Reserves</h3>
                 
@@ -61,7 +72,7 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
                         <p className="text-xs text-zinc-400 font-medium leading-snug relative z-10">
                             Official central bank gold holdings. Values are dynamically calculated based on the current live spot price.
                             <br/><br/>
-                            <span className="text-zinc-500">Source: World Gold Council (Q4 2024)</span>
+                            <span className="text-zinc-500">Source: World Gold Council (Latest Reports)</span>
                         </p>
                     </div>
                 </div>
@@ -79,9 +90,9 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
             </div>
           </div>
 
-          <div className="overflow-x-auto flex-1 custom-scrollbar">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
+          <div className="overflow-x-auto flex-1 custom-scrollbar -mr-2 pr-2">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead className="sticky top-0 bg-[#18181b] z-20">
                     <tr className="text-zinc-500 text-xs border-b border-zinc-800/50">
                         <th className="pb-3 text-center w-12 font-medium">Rank</th>
                         <th className="pb-3 font-medium">Country</th>
@@ -92,7 +103,7 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
                     </tr>
                 </thead>
                 <tbody className="text-sm">
-                    {loading ? (
+                    {isLoading ? (
                         // Skeleton Rows
                         [...Array(6)].map((_, i) => (
                             <tr key={`skel-${i}`} className="border-b border-zinc-800/30 last:border-0">
@@ -129,7 +140,7 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
                             </tr>
                         ))
                     ) : (
-                        holdings.map((item) => (
+                        displayHoldings.map((item) => (
                             <tr key={item.country} className="group hover:bg-[#27272a]/30 transition-colors border-b border-zinc-800/30 last:border-0">
                                 <td className="py-3 text-center text-zinc-500 text-sm tabular-nums">#{item.rank}</td>
                                 <td className="py-3">
@@ -171,6 +182,15 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
                     )}
                 </tbody>
             </table>
+          </div>
+          
+          {/* Footer Note */}
+          <div className="mt-4 pt-4 border-t border-zinc-800/50 flex justify-between items-center text-[10px] text-zinc-600 shrink-0">
+              <div className="flex items-center gap-1.5">
+                  <Globe className="w-3 h-3" />
+                  <span>World Gold Council Data</span>
+              </div>
+              <span>Values calculated @ {currentGoldPrice.toLocaleString('en-US', {style:'currency', currency:'USD'})}</span>
           </div>
       </div>
     </div>

@@ -261,7 +261,10 @@ const App: React.FC = () => {
         {/* Bottom Row: Transactions & News */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[450px]">
             <div className="lg:col-span-2 h-full min-h-[400px]">
-                <GlobalReservesTable currentGoldPrice={currentGoldPrice} loading={loadingStats} />
+                <GlobalReservesTable 
+                    currentGoldPrice={currentGoldPrice} 
+                    loading={loadingStats} 
+                />
             </div>
             <div className="h-full min-h-[400px]">
                 <MarketIntelligence 
