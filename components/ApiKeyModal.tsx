@@ -11,7 +11,7 @@ interface ApiKeyModalProps {
 const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) => {
   const [provider, setProvider] = useState<'gemini' | 'openrouter'>('gemini');
   const [key, setKey] = useState('');
-  const [model, setModel] = useState('google/gemini-2.0-flash-lite-preview-02-05:free');
+  const [model, setModel] = useState('openrouter/free');
 
   // Reset inputs when opening (or could load from localStorage if we wanted persistence in UI)
   useEffect(() => {
@@ -20,7 +20,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
         if (storedProvider === 'openrouter') {
             setProvider('openrouter');
             setKey(localStorage.getItem('openrouter_api_key') || '');
-            setModel(localStorage.getItem('openrouter_model') || 'google/gemini-2.0-flash-lite-preview-02-05:free');
+            setModel(localStorage.getItem('openrouter_model') || 'openrouter/free');
         } else {
             setProvider('gemini');
             setKey(localStorage.getItem('gemini_api_key') || '');
