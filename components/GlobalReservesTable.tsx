@@ -92,14 +92,14 @@ const GlobalReservesTable: React.FC<GlobalReservesTableProps> = ({ currentGoldPr
 
           <div className="overflow-x-auto flex-1 custom-scrollbar -mr-2 pr-2">
             <table className="w-full text-left border-collapse min-w-[600px]">
-                <thead className="sticky top-0 bg-[#18181b] z-20">
+                <thead className="sticky top-0 z-20 backdrop-blur-md">
                     <tr className="text-zinc-500 text-xs border-b border-zinc-800/50">
-                        <th className="pb-3 text-center w-12 font-medium">Rank</th>
-                        <th className="pb-3 font-medium">Country</th>
-                        <th className="pb-3 font-medium text-right">Holdings</th>
-                        <th className="pb-3 font-medium text-right">Value (Live)</th>
-                        <th className="pb-3 font-medium text-right">% of Reserves</th>
-                        <th className="pb-3 font-medium text-right pr-4">Change</th>
+                        <th className="py-3 text-center w-12 font-medium">Rank</th>
+                        <th className="py-3 font-medium">Country</th>
+                        <th className="py-3 font-medium text-right">Holdings</th>
+                        <th className="py-3 font-medium text-right">Value (Live)</th>
+                        <th className="py-3 font-medium text-right">% of Reserves</th>
+                        <th className="py-3 font-medium text-right pr-4">Change</th>
                     </tr>
                 </thead>
                 <tbody className="text-sm">
