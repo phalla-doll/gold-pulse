@@ -279,6 +279,21 @@ const App: React.FC = () => {
                 />
             </div>
         </div>
+        
+        {/* Footer Credit */}
+        <footer className="mt-4 mb-8 flex justify-center opacity-80 hover:opacity-100 transition-opacity">
+            <div className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition-all backdrop-blur-sm">
+                <span className="text-xs text-zinc-500 font-medium">Built with passion by</span>
+                <a 
+                    href="https://manthaa.dev/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-zinc-300 font-semibold group-hover:text-lime-400 transition-colors"
+                >
+                    Mantha
+                </a>
+            </div>
+        </footer>
 
       </div>
     </div>
