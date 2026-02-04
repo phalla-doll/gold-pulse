@@ -129,7 +129,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) =>
                             />
                         </div>
                         <p className="text-[10px] text-zinc-600 mt-1.5 ml-1">
-                            Recommended: <code>google/gemini-2.0-flash-lite-preview-02-05:free</code>
+                            Recommended: <code>google/gemini-3-flash-preview</code>
                         </p>
                     </div>
                 )}
