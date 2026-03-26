@@ -30,7 +30,7 @@ const Skeleton = ({ className }: { className?: string }) => (
   </div>
 );
 
-type UnitType = 'oz' | 'g' | 'chi';
+type UnitType = 'oz' | 'g' | 'chi' | 'luong';
 
 const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = false }) => {
   const [unit, setUnit] = useState<UnitType>('chi');
@@ -58,6 +58,11 @@ const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = fals
         convertedPrice = rawPrice * factor;
         convertedData = baseMetric.data.map(v => v * factor);
         unitLabel = '/ chi';
+    } else if (unit === 'luong') {
+        const factor = 37.5 / 31.1035;
+        convertedPrice = rawPrice * factor;
+        convertedData = baseMetric.data.map(v => v * factor);
+        unitLabel = '/ luong';
     }
 
     const newMetric: StatMetric = {
@@ -97,6 +102,7 @@ const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = fals
                     <option value="oz">Troy Ounce (oz)</option>
                     <option value="g">Gram (g)</option>
                     <option value="chi">Chi / Tael (3.75g)</option>
+                    <option value="luong">Luong (37.5g)</option>
                 </select>
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">

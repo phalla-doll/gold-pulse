@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label, unitLabel }: any) => {
   return null;
 };
 
-type UnitType = 'oz' | 'g' | 'chi';
+type UnitType = 'oz' | 'g' | 'chi' | 'luong';
 
 const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
   const [unit, setUnit] = useState<UnitType>('chi');
@@ -50,6 +50,9 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
      } else if (unit === 'chi') {
          factor = 3.75 / 31.1035;
          label = '/chi';
+     } else if (unit === 'luong') {
+         factor = 37.5 / 31.1035;
+         label = '/luong';
      }
 
      // Deep copy and transform
@@ -106,6 +109,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
                     <option value="oz">oz</option>
                     <option value="g">gram</option>
                     <option value="chi">chi</option>
+                    <option value="luong">luong</option>
                 </select>
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
                     <ChevronDown className="w-3 h-3" />
