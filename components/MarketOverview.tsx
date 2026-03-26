@@ -33,7 +33,7 @@ const Skeleton = ({ className }: { className?: string }) => (
 type UnitType = 'oz' | 'g' | 'chi';
 
 const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = false }) => {
-  const [unit, setUnit] = useState<UnitType>('oz');
+  const [unit, setUnit] = useState<UnitType>('chi');
 
   // Conversion logic derived from metrics to avoid mutating props
   const displayMetrics = useMemo(() => {

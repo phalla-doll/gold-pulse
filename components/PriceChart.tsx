@@ -38,7 +38,7 @@ const CustomTooltip = ({ active, payload, label, unitLabel }: any) => {
 type UnitType = 'oz' | 'g' | 'chi';
 
 const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
-  const [unit, setUnit] = useState<UnitType>('oz');
+  const [unit, setUnit] = useState<UnitType>('chi');
 
   const { processedData, currentPrice, unitLabel } = useMemo(() => {
      let factor = 1;
