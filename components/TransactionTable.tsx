@@ -9,12 +9,26 @@ interface TransactionTableProps {
 
 // Data based on approx World Gold Council holdings (Tonnes)
 const baseHoldings = [
-  { rank: 1, country: 'United States', holdings: 8133.5, percentage: 69.7, change: 0, flagCode: 'us' },
-  { rank: 2, country: 'Germany', holdings: 3352.6, percentage: 67.8, change: -0.2, flagCode: 'de' },
-  { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 65.1, change: 0, flagCode: 'it' },
-  { rank: 4, country: 'France', holdings: 2436.9, percentage: 60.3, change: 0, flagCode: 'fr' },
-  { rank: 5, country: 'Russia', holdings: 2332.7, percentage: 26.2, change: +3.1, flagCode: 'ru' },
-  { rank: 6, country: 'China', holdings: 2264.3, percentage: 4.3, change: +10.5, flagCode: 'cn' },
+  { rank: 1, country: 'United States', holdings: 8133.5, percentage: 84.2, change: 0, flagCode: 'us' },
+  { rank: 2, country: 'Germany', holdings: 3350.3, percentage: 84.0, change: 0, flagCode: 'de' },
+  { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 79.3, change: 0, flagCode: 'it' },
+  { rank: 4, country: 'France', holdings: 2437.0, percentage: 81.8, change: 0, flagCode: 'fr' },
+  { rank: 5, country: 'Russia', holdings: 2326.5, percentage: 47.0, change: 0, flagCode: 'ru' },
+  { rank: 6, country: 'China', holdings: 2306.3, percentage: 8.6, change: 0, flagCode: 'cn' },
+  { rank: 7, country: 'Switzerland', holdings: 1039.9, percentage: 15.2, change: 0, flagCode: 'ch' },
+  { rank: 8, country: 'India', holdings: 880.1, percentage: 17.4, change: 0, flagCode: 'in' },
+  { rank: 9, country: 'Japan', holdings: 845.9, percentage: 8.6, change: 0, flagCode: 'jp' },
+  { rank: 10, country: 'Turkey', holdings: 613.1, percentage: 54.6, change: 0, flagCode: 'tr' },
+  { rank: 11, country: 'Netherlands', holdings: 612.5, percentage: 74.2, change: 0, flagCode: 'nl' },
+  { rank: 12, country: 'Poland', holdings: 550.2, percentage: 28.4, change: 0, flagCode: 'pl' },
+  { rank: 13, country: 'Taiwan', holdings: 423.9, percentage: 10.1, change: 0, flagCode: 'tw' },
+  { rank: 14, country: 'Uzbekistan', holdings: 390.3, percentage: 83.0, change: 0, flagCode: 'uz' },
+  { rank: 15, country: 'Portugal', holdings: 382.7, percentage: 79.9, change: 0, flagCode: 'pt' },
+  { rank: 16, country: 'Kazakhstan', holdings: 341.0, percentage: 72.0, change: 0, flagCode: 'kz' },
+  { rank: 17, country: 'Saudi Arabia', holdings: 323.1, percentage: 10.0, change: 0, flagCode: 'sa' },
+  { rank: 18, country: 'United Kingdom', holdings: 310.3, percentage: 20.3, change: 0, flagCode: 'gb' },
+  { rank: 19, country: 'Lebanon', holdings: 286.8, percentage: 82.4, change: 0, flagCode: 'lb' },
+  { rank: 20, country: 'Spain', holdings: 281.6, percentage: 33.8, change: 0, flagCode: 'es' },
 ];
 
 // Helper for consistent shimmer skeletons

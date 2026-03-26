@@ -168,14 +168,26 @@ export const getTopGoldReserves = async (): Promise<CountryGoldHolding[]> => {
     await new Promise(resolve => setTimeout(resolve, 800));
 
     const reserves: CountryGoldHolding[] = [
-      { rank: 1, country: 'United States', holdings: 8133.5, percentage: 71.2, change: 0, flagCode: 'us', value: '0' },
-      { rank: 2, country: 'Germany', holdings: 3352.6, percentage: 68.5, change: -0.1, flagCode: 'de', value: '0' },
-      { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 65.8, change: 0, flagCode: 'it', value: '0' },
-      { rank: 4, country: 'France', holdings: 2436.9, percentage: 61.1, change: 0, flagCode: 'fr', value: '0' },
-      { rank: 5, country: 'Russia', holdings: 2332.7, percentage: 27.4, change: +3.2, flagCode: 'ru', value: '0' },
-      { rank: 6, country: 'China', holdings: 2264.3, percentage: 5.2, change: +9.8, flagCode: 'cn', value: '0' },
-      { rank: 7, country: 'Switzerland', holdings: 1040.0, percentage: 8.1, change: 0, flagCode: 'ch', value: '0' },
-      { rank: 8, country: 'Japan', holdings: 846.0, percentage: 4.8, change: +0.4, flagCode: 'jp', value: '0' },
+      { rank: 1, country: 'United States', holdings: 8133.5, percentage: 84.2, change: 0, flagCode: 'us', value: '0' },
+      { rank: 2, country: 'Germany', holdings: 3350.3, percentage: 84.0, change: 0, flagCode: 'de', value: '0' },
+      { rank: 3, country: 'Italy', holdings: 2451.8, percentage: 79.3, change: 0, flagCode: 'it', value: '0' },
+      { rank: 4, country: 'France', holdings: 2437.0, percentage: 81.8, change: 0, flagCode: 'fr', value: '0' },
+      { rank: 5, country: 'Russia', holdings: 2326.5, percentage: 47.0, change: 0, flagCode: 'ru', value: '0' },
+      { rank: 6, country: 'China', holdings: 2306.3, percentage: 8.6, change: 0, flagCode: 'cn', value: '0' },
+      { rank: 7, country: 'Switzerland', holdings: 1039.9, percentage: 15.2, change: 0, flagCode: 'ch', value: '0' },
+      { rank: 8, country: 'India', holdings: 880.1, percentage: 17.4, change: 0, flagCode: 'in', value: '0' },
+      { rank: 9, country: 'Japan', holdings: 845.9, percentage: 8.6, change: 0, flagCode: 'jp', value: '0' },
+      { rank: 10, country: 'Turkey', holdings: 613.1, percentage: 54.6, change: 0, flagCode: 'tr', value: '0' },
+      { rank: 11, country: 'Netherlands', holdings: 612.5, percentage: 74.2, change: 0, flagCode: 'nl', value: '0' },
+      { rank: 12, country: 'Poland', holdings: 550.2, percentage: 28.4, change: 0, flagCode: 'pl', value: '0' },
+      { rank: 13, country: 'Taiwan', holdings: 423.9, percentage: 10.1, change: 0, flagCode: 'tw', value: '0' },
+      { rank: 14, country: 'Uzbekistan', holdings: 390.3, percentage: 83.0, change: 0, flagCode: 'uz', value: '0' },
+      { rank: 15, country: 'Portugal', holdings: 382.7, percentage: 79.9, change: 0, flagCode: 'pt', value: '0' },
+      { rank: 16, country: 'Kazakhstan', holdings: 341.0, percentage: 72.0, change: 0, flagCode: 'kz', value: '0' },
+      { rank: 17, country: 'Saudi Arabia', holdings: 323.1, percentage: 10.0, change: 0, flagCode: 'sa', value: '0' },
+      { rank: 18, country: 'United Kingdom', holdings: 310.3, percentage: 20.3, change: 0, flagCode: 'gb', value: '0' },
+      { rank: 19, country: 'Lebanon', holdings: 286.8, percentage: 82.4, change: 0, flagCode: 'lb', value: '0' },
+      { rank: 20, country: 'Spain', holdings: 281.6, percentage: 33.8, change: 0, flagCode: 'es', value: '0' },
     ];
     
     return reserves;
