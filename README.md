@@ -32,7 +32,7 @@ A high-fidelity, dark-mode financial dashboard designed for tracking real-time G
 - **Visualization:** Recharts
 - **Icons:** Lucide React
 - **AI Integration:** Google Gemini API (`@google/genai`), OpenRouter
-- **Market Data:** Twelve Data API
+- **Market Data:** Yahoo Finance API
 
 ## Getting Started
 
@@ -40,7 +40,6 @@ A high-fidelity, dark-mode financial dashboard designed for tracking real-time G
 
 - Node.js installed on your machine.
 - A **Google Gemini API Key** (for AI insights).
-- A **Twelve Data API Key** (optional, for live market data).
 
 ### Installation
 
@@ -72,9 +71,10 @@ The dashboard allows you to configure your AI provider directly via the UI:
 4. Keys are stored securely in your browser's `localStorage`.
 
 ### Market Data API
-By default, the app uses a fallback mock data generator if no data provider is configured. To use live financial data:
-1. Obtain an API key from [Twelve Data](https://twelvedata.com/).
-2. Update the `TWELVE_DATA_API_KEY` constant in `services/marketDataService.ts`.
+The app uses Yahoo Finance's free API for live gold futures data:
+- **No API key required**
+- **Symbol:** GC=F (Gold Futures)
+- **Rate limit:** ~2,000 requests/hour per IP
 
 ## Disclaimer
 

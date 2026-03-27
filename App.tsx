@@ -8,7 +8,7 @@ import MarketIntelligence from './components/MarketIntelligence';
 import ApiKeyModal from './components/ApiKeyModal'; // Import Modal
 import { StatMetric, PriceDataPoint, NewsItem } from './types';
 import { getMarketInsight, getLiveGoldNews, isAIConfigured, saveConfig } from './services/geminiService'; // Import auth helpers
-import { fetchDailyGoldPrices, generateMockHistory } from './services/marketDataService';
+import { fetchDailyGoldPrices } from './services/marketDataService';
 import { trackEvent } from './services/analytics';
 
 // Constants for calculations
@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [currentHistory, setCurrentHistory] = useState<number[]>([]);
   const [currentChange, setCurrentChange] = useState<number>(0);
   const [currentPriceStr, setCurrentPriceStr] = useState<string>('');
+  const [dataError, setDataError] = useState<boolean>(false);
   
   // State for News
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -55,54 +56,35 @@ const App: React.FC = () => {
   // 1. Fetch Market Data
   const fetchData = async (range: string) => {
     setLoadingStats(true);
+    setDataError(false);
     
-    // Attempt to fetch real data
     const apiResult = await fetchDailyGoldPrices(range);
     
-    let priceData: PriceDataPoint[] = [];
-    let currentPriceNum = 2342.10;
-    let priceStr = "$2,342.10";
-    let change = 2.5;
-    let priceHistory: number[] = [];
-    let volatility = 1.2;
-
-    if (apiResult) {
-       // Use Real Data
-       priceData = apiResult.data;
-       currentPriceNum = apiResult.currentPrice;
-       priceStr = `$${currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-       change = apiResult.change;
-       priceHistory = apiResult.history;
-       volatility = apiResult.volatility || 1.2;
-    } else {
-       // Fallback: Generate consistent mock history based on range
-       priceData = generateMockHistory(range);
-       const latest = priceData[priceData.length-1].price;
-       const first = priceData[0].price;
-       const mockChange = ((latest - first) / first) * 100;
-       
-       currentPriceNum = latest;
-       priceHistory = priceData.map(d => d.price);
-       priceStr = `$${latest.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-       change = mockChange;
-       // Mock volatility
-       volatility = 0.85;
+    if (!apiResult) {
+      setDataError(true);
+      setLoadingStats(false);
+      setChartData([]);
+      return;
     }
+
+    const priceData = apiResult.data;
+    const currentPriceNum = apiResult.currentPrice;
+    const priceStr = `$${currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    const change = apiResult.change;
+    const priceHistory = apiResult.history;
+    const volatility = apiResult.volatility || 1.2;
 
     setCurrentGoldPrice(currentPriceNum);
     setCurrentHistory(priceHistory);
     setCurrentChange(change);
     setCurrentPriceStr(priceStr);
 
-    // Calculate Dynamic Market Cap based on Price
     const marketCapValue = (currentPriceNum * EST_GLOBAL_SUPPLY_OZ);
     const marketCapTrillions = (marketCapValue / 1000000000000).toFixed(1) + " T";
     const marketCapHistory = priceHistory.map(p => (p * EST_GLOBAL_SUPPLY_OZ) / 1000000000000);
 
-    // Volatility Data 
     const volatilityHistory = new Array(7).fill(0).map(() => Math.abs(volatility + (Math.random() - 0.5) * 0.2));
 
-    // Update Stats
     setStatsData(prev => {
          const newStats = [...prev];
          newStats[0] = { ...newStats[0], value: priceStr, change: parseFloat(change.toFixed(2)), data: priceHistory };
@@ -246,15 +228,30 @@ const App: React.FC = () => {
         </header>
 
         {/* Top Stats Overview Card */}
-        <MarketOverview metrics={statsData} loading={loadingStats} />
+        <MarketOverview metrics={statsData} loading={loadingStats} dataError={dataError} />
+
+         {/* Data Error Banner */}
+         {dataError && (
+           <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
+             <div className="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center flex-shrink-0">
+               <svg className="w-5 h-5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+               </svg>
+             </div>
+             <div>
+               <h4 className="text-rose-400 font-semibold text-sm">Market Data Unavailable</h4>
+               <p className="text-zinc-400 text-xs mt-0.5">Unable to fetch live gold prices. Yahoo Finance API may be blocked by your browser (CORS). Try refreshing or check console for details.</p>
+             </div>
+           </div>
+         )}
 
         {/* Middle Row: Price Chart & Volume */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:h-[400px]">
             <div className="lg:col-span-2 h-[300px] lg:h-full">
-                <PriceChart range={selectedRange} data={chartData} />
+                <PriceChart range={selectedRange} data={chartData} dataError={dataError} />
             </div>
             <div className="h-[300px] lg:h-full">
-                <VolumeChart range={selectedRange} data={chartData} />
+                <VolumeChart range={selectedRange} data={chartData} dataError={dataError} />
             </div>
         </div>
 

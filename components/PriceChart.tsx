@@ -7,6 +7,7 @@ import { trackEvent } from '../services/analytics';
 interface PriceChartProps {
   range: string;
   data: PriceDataPoint[];
+  dataError?: boolean;
 }
 
 const CustomTooltip = ({ active, payload, label, unitLabel }: any) => {
@@ -37,7 +38,7 @@ const CustomTooltip = ({ active, payload, label, unitLabel }: any) => {
 
 type UnitType = 'oz' | 'g' | 'chi' | 'luong';
 
-const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
+const PriceChart: React.FC<PriceChartProps> = ({ range, data, dataError }) => {
   const [unit, setUnit] = useState<UnitType>('chi');
 
   const { processedData, currentPrice, unitLabel } = useMemo(() => {
@@ -55,7 +56,6 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
          label = '/luong';
      }
 
-     // Deep copy and transform
      const processed = data.map(d => ({
          ...d,
          price: d.price * factor
@@ -67,8 +67,21 @@ const PriceChart: React.FC<PriceChartProps> = ({ range, data }) => {
   }, [data, unit]);
 
   const startPrice = processedData.length > 0 ? processedData[0].price : 0;
-  // Calculate change over the visible period
   const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
+
+  if (dataError || data.length === 0) {
+    return (
+      <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full flex flex-col items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <h3 className="text-zinc-400 font-medium text-lg mb-1">Price Chart Unavailable</h3>
+        <p className="text-zinc-500 text-sm text-center max-w-xs">Unable to load gold price data. The API may be blocked by your browser.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full flex flex-col relative overflow-hidden">

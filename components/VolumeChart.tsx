@@ -4,7 +4,8 @@ import { PriceDataPoint } from '../types';
 
 interface VolumeChartProps {
   range: string;
-  data: PriceDataPoint[]; // Use the shared data point type
+  data: PriceDataPoint[];
+  dataError?: boolean;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -21,11 +22,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
   };
 
-const VolumeChart: React.FC<VolumeChartProps> = ({ range, data }) => {
-  // Simple slicing logic for display limits
-  // If data set is large (e.g. 1Y or 6M), we only show last ~20 bars for bar chart readability
-  // unless we want to show all. 
-  // Let's show a max of 30 bars to keep it clean.
+const VolumeChart: React.FC<VolumeChartProps> = ({ range, data, dataError }) => {
+  
+  if (dataError || data.length === 0) {
+    return (
+      <div className="bg-[#18181b] card-noise p-6 rounded-3xl border border-white/5 h-full flex flex-col items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <h3 className="text-zinc-400 font-medium text-lg mb-1">Volume Unavailable</h3>
+        <p className="text-zinc-500 text-sm text-center max-w-xs">Unable to load volume data.</p>
+      </div>
+    );
+  }
+
   const displayCount = 30;
   const displayData = data.slice(-displayCount).map(d => {
     const date = new Date(d.time);
