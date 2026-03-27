@@ -7,6 +7,7 @@ import { trackEvent } from '../services/analytics';
 interface MarketOverviewProps {
   metrics: StatMetric[];
   loading?: boolean;
+  dataError?: boolean;
 }
 
 const icons = [
@@ -32,10 +33,9 @@ const Skeleton = ({ className }: { className?: string }) => (
 
 type UnitType = 'oz' | 'g' | 'chi' | 'luong';
 
-const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = false }) => {
+const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = false, dataError = false }) => {
   const [unit, setUnit] = useState<UnitType>('chi');
 
-  // Conversion logic derived from metrics to avoid mutating props
   const displayMetrics = useMemo(() => {
     if (loading || metrics.length === 0) return metrics;
 
@@ -74,6 +74,23 @@ const MarketOverview: React.FC<MarketOverviewProps> = ({ metrics, loading = fals
 
     return [newMetric, ...metrics.slice(1)];
   }, [metrics, loading, unit]);
+
+  if (dataError) {
+    return (
+      <div className="bg-[#18181b] card-noise p-6 md:p-8 rounded-3xl border border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-rose-400/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+        <div className="flex flex-col items-center justify-center py-12 relative z-10">
+          <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-zinc-300 font-medium text-lg mb-2">Market Data Unavailable</h3>
+          <p className="text-zinc-500 text-sm text-center max-w-md">Unable to fetch live market data. This may be due to browser security restrictions (CORS). Try refreshing the page or check the browser console for details.</p>
+        </div>
+      </div>
+    );
+  }
 
   const displayItems = loading ? new Array(4).fill(null) : displayMetrics;
 

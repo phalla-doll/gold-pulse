@@ -1,91 +1,71 @@
 import { PriceDataPoint, CountryGoldHolding } from '../types';
 
-// REPLACE THIS WITH YOUR REAL API KEY FROM TWELVE DATA
-const TWELVE_DATA_API_KEY = '6fbdc412ae924882bf727ae84fa452b6'; 
+const YAHOO_FINANCE_BASE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart';
+const GOLD_SYMBOL = 'GC=F';
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+const rangeMap: Record<string, { range: string; interval: string }> = {
+  '1D':  { range: '1d',  interval: '5m' },
+  '7D':  { range: '7d',  interval: '1h' },
+  '1M':  { range: '1mo', interval: '1d' },
+  '6M':  { range: '6mo', interval: '1d' },
+  '1Y':  { range: '1y',  interval: '1d' },
+};
 
 export const fetchDailyGoldPrices = async (range: string = '1M'): Promise<{ data: PriceDataPoint[], currentPrice: number, change: number, history: number[], volatility: number } | null> => {
-  if (!TWELVE_DATA_API_KEY) {
-    console.warn("Twelve Data API Key not set. Using fallback mock data.");
-    return null; // Triggers fallback in UI
-  }
-
-  // Determine API parameters based on range
-  let interval = '1day';
-  let outputsize = 30;
-
-  switch(range) {
-      case '1D': 
-          interval = '15min'; 
-          outputsize = 96; // Approx 24 hours of 15m candles
-          break;
-      case '7D': 
-          interval = '2h'; 
-          outputsize = 84; // 7 days * ~12 candles/day
-          break;
-      case '1M': 
-          interval = '1day'; 
-          outputsize = 30; 
-          break;
-      case '6M': 
-          interval = '1day'; 
-          outputsize = 130; // Approx trading days in 6 months
-          break;
-      case '1Y': 
-          interval = '1week'; 
-          outputsize = 52; 
-          break;
-      default: 
-          interval = '1day'; 
-          outputsize = 30;
-  }
-
+  const yahooParams = rangeMap[range] || rangeMap['1M'];
+  const yahooUrl = `${YAHOO_FINANCE_BASE_URL}/${GOLD_SYMBOL}?range=${yahooParams.range}&interval=${yahooParams.interval}`;
+  const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(yahooUrl)}`;
+  
   try {
-    const response = await fetch(
-      `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${interval}&outputsize=${outputsize}&apikey=${TWELVE_DATA_API_KEY}`
-    );
+    const response = await fetch(proxiedUrl);
 
-    const result = await response.json();
-
-    if (result.status === 'error' || !result.values) {
-      console.error("Twelve Data API Error:", result.message);
+    if (!response.ok) {
+      console.error("Yahoo Finance API Error:", response.status);
       return null;
     }
 
-    // Twelve Data returns newest first, so we reverse for the chart
-    const reversedData = result.values.reverse();
+    const data = await response.json();
+    const result = data.chart?.result?.[0];
 
-    const formattedData: PriceDataPoint[] = reversedData.map((item: any) => ({
-      // Ensure ISO format for compatibility (replace space with T)
-      time: item.datetime.replace(' ', 'T'), 
-      price: parseFloat(item.close),
-      volume: item.volume ? parseInt(item.volume) : undefined
-    }));
+    if (!result || !result.timestamp || !result.indicators?.quote?.[0]) {
+      console.error("Yahoo Finance API Error: Invalid response structure");
+      return null;
+    }
 
-    const currentPrice = formattedData[formattedData.length - 1].price;
+    const { meta, timestamp, indicators } = result;
+    const quote = indicators.quote[0];
+
+    const formattedData: PriceDataPoint[] = timestamp
+      .map((ts: number, i: number) => ({
+        time: new Date(ts * 1000).toISOString(),
+        price: quote.close[i],
+        volume: quote.volume[i] || 0,
+      }))
+      .filter((d: PriceDataPoint) => d.price !== null);
+
+    if (formattedData.length === 0) {
+      console.error("Yahoo Finance API Error: No valid price data");
+      return null;
+    }
+
+    const currentPrice = meta.regularMarketPrice || formattedData[formattedData.length - 1].price;
     const startPrice = formattedData[0].price;
-    
-    // Calculate Change over the selected period
     const change = ((currentPrice - startPrice) / startPrice) * 100;
-
-    // Sparkline history (just the numbers)
     const history = formattedData.map(d => d.price);
 
-    // Calculate Volatility (Standard Deviation of returns)
     const returns = [];
     for (let i = 1; i < formattedData.length; i++) {
-        const r = (formattedData[i].price - formattedData[i-1].price) / formattedData[i-1].price;
-        returns.push(r);
+      const r = (formattedData[i].price - formattedData[i - 1].price) / formattedData[i - 1].price;
+      returns.push(r);
     }
-    
-    // Safety check for empty returns
+
     let dailyVolatility = 0.8;
     if (returns.length > 0) {
-        const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-        const variance = returns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) / returns.length;
-        dailyVolatility = Math.sqrt(variance) * 100;
-        
-        // Adjust volatility scale perception for different intervals
-        if (range === '1D') dailyVolatility *= 4; // Scale up for visual relevance on small moves
+      const meanReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+      const variance = returns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) / returns.length;
+      dailyVolatility = Math.sqrt(variance) * 100;
+      if (range === '1D') dailyVolatility *= 4;
     }
 
     return {
