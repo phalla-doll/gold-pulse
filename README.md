@@ -56,8 +56,14 @@ A high-fidelity, dark-mode financial dashboard designed for tracking real-time G
 
 3. **Start the development server**
    ```bash
-   npm start
+   npm run dev
    ```
+   
+   For local development with API support (Edge Functions):
+   ```bash
+   npm run dev:vercel
+   ```
+   > Requires Vercel CLI: `npm i -g vercel`
 
 ## Configuration
 
@@ -75,6 +81,7 @@ The app uses Yahoo Finance's free API for live gold futures data:
 - **No API key required**
 - **Symbol:** GC=F (Gold Futures)
 - **Rate limit:** ~2,000 requests/hour per IP
+- **CORS:** Handled via Vercel Edge Function (`/api/gold-prices`)
 
 ## Disclaimer
 

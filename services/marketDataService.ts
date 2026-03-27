@@ -1,24 +1,10 @@
 import { PriceDataPoint, CountryGoldHolding } from '../types';
 
-const YAHOO_FINANCE_BASE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart';
-const GOLD_SYMBOL = 'GC=F';
-const CORS_PROXY = 'https://corsproxy.io/?';
-
-const rangeMap: Record<string, { range: string; interval: string }> = {
-  '1D':  { range: '1d',  interval: '5m' },
-  '7D':  { range: '7d',  interval: '1h' },
-  '1M':  { range: '1mo', interval: '1d' },
-  '6M':  { range: '6mo', interval: '1d' },
-  '1Y':  { range: '1y',  interval: '1d' },
-};
+const API_ENDPOINT = '/api/gold-prices';
 
 export const fetchDailyGoldPrices = async (range: string = '1M'): Promise<{ data: PriceDataPoint[], currentPrice: number, change: number, history: number[], volatility: number } | null> => {
-  const yahooParams = rangeMap[range] || rangeMap['1M'];
-  const yahooUrl = `${YAHOO_FINANCE_BASE_URL}/${GOLD_SYMBOL}?range=${yahooParams.range}&interval=${yahooParams.interval}`;
-  const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(yahooUrl)}`;
-  
   try {
-    const response = await fetch(proxiedUrl);
+    const response = await fetch(`${API_ENDPOINT}?range=${range}`);
 
     if (!response.ok) {
       console.error("Yahoo Finance API Error:", response.status);
